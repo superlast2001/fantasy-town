@@ -50,7 +50,7 @@ async def main():
     await pg.screenshot(path='screenshot-apartment.png')
     await pg.evaluate("document.querySelectorAll('#top,#talk,#tcard').forEach(e=>e.style.visibility='hidden')")
     await pg.screenshot(path='/tmp/full.png')
-    await pg.evaluate("window.ZOOM=3.2;window.CAMT=[6,5]");await pg.wait_for_timeout(300);await pg.screenshot(path='screenshot-furniture-closeup.png');await pg.evaluate("window.ZOOM=0")
+    await pg.evaluate("window.ZOOM=3.4;window.CAMT=[6,5.5];window.CLEAN=1;document.querySelectorAll('body>*:not(canvas)').forEach(e=>e.dataset.h=e.style.visibility,e=>0);document.body.classList.add('clean')");await pg.add_style_tag(content='body.clean>*:not(#c){visibility:hidden!important}');await pg.wait_for_timeout(400);await pg.screenshot(path='screenshot-furniture-closeup.png');await pg.evaluate("window.ZOOM=0;window.CLEAN=0;document.body.classList.remove('clean')")
     await pg.evaluate("document.querySelectorAll('#top,#talk,#tcard').forEach(e=>e.style.visibility='')")
     await pg.evaluate("FT.enterRoom('office');FT.setPos(7,8)");await pg.wait_for_timeout(500);await pg.screenshot(path='screenshot-office.png')
     await pg.evaluate("FT.goArea('town',[30,7]);FT.act(30,4)");await pg.wait_for_timeout(300);await pg.screenshot(path='/tmp/shop.png');await pg.evaluate("closeMenu();FT.enterRoom('f1')")
