@@ -14,7 +14,9 @@ async def main():
     print('apps',await pg.evaluate("FT.S.condo.apps.map(a=>a.n+':'+a.offer).join(',')"))
     await pg.evaluate("FT.condo=true;FT.apps=true");await pg.wait_for_timeout(400)
     await pg.screenshot(path='screenshot-advertise.png')
-    print('pick unfurnished ->',await pg.evaluate("FT.condoAct('pick',0),FT.S.condo.tenants[0]"))
+    print('starter unit',await pg.evaluate("FT.S.rooms.f1.furn.map(f=>f.k).join(',')"),'missing',await pg.evaluate("FT.missing('f1')"))
+    await pg.evaluate("FT.apps=false;FT.condo=false;FT.enterRoom('f1');FT.setPos(13,16)");await pg.wait_for_timeout(600);await pg.screenshot(path='screenshot-starter-unit.png');await pg.evaluate("FT.apps=true");await pg.evaluate("FT.goArea('town',[4,7])")
+    print('pick starter unit ->',await pg.evaluate("FT.condoAct('pick',0),FT.S.condo.tenants[0]"))
     await pg.evaluate("FT.enterRoom('f1');FT.setPos(13,16)")
     for (k,x,y) in [('stove',1,0),('fridge',4,0),('bed_wood',10,1),('toilet',25,0)]:
       await pg.evaluate(f"FT.tryPlace('{k}',{x},{y})")

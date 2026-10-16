@@ -56,6 +56,9 @@ const OFFICE_DEFAULT=[{k:'frontdesk',x:10,y:6},{k:'fountain_lobby',x:11,y:12},{k
  {k:'sofa_curve',x:19,y:12},{k:'table_round',x:20,y:14},{k:'pendant',x:20,y:14},{k:'waitchairs',x:18,y:15,r:1},{k:'ficus_lobby',x:25,y:11},{k:'watercooler',x:25,y:14},{k:'plant_monstera',x:24,y:18},{k:'fire_ext',x:25,y:19},
  {k:'execdesk',x:20,y:3},{k:'officechair',x:21,y:2},{k:'certificate',x:21,y:0},{k:'clock',x:19,y:0},{k:'filecab',x:24,y:0},{k:'filecab',x:25,y:0},{k:'bookshelf',x:18,y:7,r:1},{k:'plant_fiddle',x:25,y:7},{k:'rug_lux',x:20,y:5},{k:'floorlamp',x:18,y:1},{k:'shelf_modern',x:25,y:3},
  {k:'bed_wood',x:0,y:1},{k:'nightstand',x:2,y:1},{k:'wardrobe',x:4,y:0},{k:'frame_family',x:0,y:4,v:1},{k:'rug_wood',x:3,y:3},{k:'plant_monstera',x:6,y:6},{k:'lavalamp',x:6,y:0}];
+// v0.0.1.4 new tenant units come sparse but liveable: the basics plus a small table
+const STARTER_UNIT=[{k:'stove',x:1,y:0},{k:'sink',x:2,y:0},{k:'fridge',x:4,y:0},{k:'dining',x:3,y:4},{k:'bed',x:10,y:1},{k:'toilet',x:25,y:0},{k:'coffeetable',x:3,y:13}];
+const starterFurn=()=>STARTER_UNIT.map(f=>({...f}));
 const DEMO_UNIT=[['counter',0,0],['stove',1,0],['sink',2,0],['counter_wood',3,0],['fridge',4,0],['coffeebar',5,0],['watercooler',8,0],['spiceshelf',0,2],['clock',0,4],['rug_wood',3,4],['dining',3,4],['fire_ext',8,8],['plant_monstera',0,8],
  ['bed_wood',10,1],['nightstand',12,1],['frame_family',10,0],['curtains',13,0],['wardrobe',14,0],['desk',17,0],['rug_modern',13,4],['lavalamp',18,3],['plant_palm',18,8],['armchair_beach',16,6],
  ['bathtub',20,0],['bathsink',23,0],['toilet',25,0],['bathmat',23,2],['towelrack',20,4],['plant_palm',25,8],
@@ -64,7 +67,7 @@ const DEMO_UNIT=[['counter',0,0],['stove',1,0],['sink',2,0],['counter_wood',3,0]
 let S;
 function newState(){return{v:9,day:1,min:7*60,gold:600,area:'town',px:4.5*16,py:7.5*16,fx:0,fy:1,
  condo:{floors:1,building:0,ad:0,apps:null,tenants:[null]},offers:{},fr:{},
- rooms:{office:{lay:'ground',furn:OFFICE_DEFAULT.map(f=>({...f}))},f1:{lay:'unit',furn:[]}},finv:{toilet:1,bed:1,stove:1,fridge:1,plant_monstera:1,rug_wood:1},
+ rooms:{office:{lay:'ground',furn:OFFICE_DEFAULT.map(f=>({...f}))},f1:{lay:'unit',furn:starterFurn()}},finv:{plant_monstera:1,rug_wood:1},
  opt:{dpad:0},hearts:0};}
 const AF=(a,x,y,w,h,t)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(a.tile[j]&&i>=0&&i<a.cols)a.tile[j][i]=t;};
 const AS=(a,x,y,w,h,v=1)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(a.solid[j]&&i>=0&&i<a.cols)a.solid[j][i]=v;};
@@ -341,7 +344,7 @@ let toasts=[],fade=0,parts=[],banner=null,saveT=0,walkT=0,moving=false;
 function toast(t){toasts.push({t,life:2.8});if(toasts.length>3)toasts.shift();}
 let actx=null;function sfx(f){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=.05;g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.18);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.2);}catch(e){}}
 window.sleep=(passed)=>{closeMenu();S.day++;S.min=7*60;const c=S.condo,rent=rentTotal();S.gold+=rent;const msg=[];if(rent)msg.push(`Rent collected: +${rent}g`);
- if(c.building){c.building=0;c.floors++;c.tenants.push(null);const n=c.floors;S.rooms['f'+n]={lay:'unit',furn:[]};msg.push(`Floor ${n} is finished! Furnish it before renting`);}
+ if(c.building){c.building=0;c.floors++;c.tenants.push(null);const n=c.floors;S.rooms['f'+n]={lay:'unit',furn:starterFurn()};msg.push(`Floor ${n} is finished — basics included, decorate it with your rent money!`);}
  if(c.ad&&!c.apps){c.apps=makeApps();c.ad=0;if(c.apps.length)msg.push('3 applicants are waiting at the front desk!');}
  follow=null;for(const n in TN)TN[n].goal=null;syncTenants(true);goArea('room:office',[3,3]);fade=1.2;save(1);toast(passed?'You dozed off... Day '+S.day:'Good morning! Day '+S.day);msg.forEach(toast);};
 // ---------- geometry / pathing ----------
