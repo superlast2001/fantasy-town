@@ -1,6 +1,6 @@
 'use strict';
 // Isometric renderer helpers: 2:1 diamonds, outlined shaded boxes, cached sprites
-const TW=32,TH=16,RS=3,OLC='#2a2238';
+const TW=32,TH=16,RS=2,OLC='#2a2238';
 const isoP=(x,y,z=0)=>[(x-y)*TW/2,(x+y)*TH/2-z];
 function poly(c,pts,fill,ol=OLC,lw=1){c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(ol){c.lineWidth=lw;c.strokeStyle=ol;c.stroke();}}
 // rounded polygon path (arcTo corners)
@@ -33,7 +33,7 @@ function shadowE(c,x,y,rx,ry){c.beginPath();c.ellipse(x,y,rx,ry,0,0,7);c.fillSty
 const SPR={};
 function sprite(key,w,d,hpx,fn){if(SPR[key])return SPR[key];const W=(w+d)*TW/2+24,H=(w+d)*TH/2+hpx+24,ox=d*TW/2+12,oy=hpx+12;
  const cv=document.createElement('canvas');cv.width=Math.ceil(W*RS);cv.height=Math.ceil(H*RS);const c=cv.getContext('2d');c.scale(RS,RS);c.translate(ox,oy);c.lineJoin='round';c.lineCap='round';fn(c);
- return SPR[key]={cv,ox,oy};}
+ pixelize(cv);return SPR[key]={cv,ox,oy};}
 function drawSprite(g,s,x,y){const [px,py]=isoP(x,y);g.drawImage(s.cv,px-s.ox,py-s.oy,s.cv.width/RS,s.cv.height/RS);}
 // ---- ground tile painter ----
 const GCOL={23:['#ffffff','#f2f4f8'],26:['#e8f6ff','#d8eefa'],27:['#f6f0ea','#ece4dc'],24:['#e2a868','#d89e5e'],25:['#c8c0d8','#c0b8d0'],0:['#8fd27a','#86c972'],15:['#5fa866','#58a060'],1:['#6a6a80','#64647a'],2:['#4aa8e8','#45a0e0'],3:['#f2dca0','#ecd496'],4:['#3a2c7a','#352872'],5:['#b8b8c8','#b0b0c2'],6:['#9a6a44','#94643f'],7:['#c8945a','#c08c52'],8:['#c89a72','#c0926a'],9:['#6ad8ff','#60d0f8'],10:['#d8d8e2','#c8c8d6'],12:['#5a5670','#545068'],13:['#5a5670','#545068'],14:['#e2c89a','#dcc090'],20:['#f0e6d6','#e6dccb'],21:['#c8a8e0','#bea0d8'],22:['#b9d6f0','#b0cceb']};
@@ -76,3 +76,26 @@ function chibi(c,x,y,o,t,walk){const s=1;const bob=walk?Math.abs(Math.sin(t*10))
  if(o.hat){c.beginPath();c.ellipse(x,hy-6,9.5,3,0,0,7);c.fillStyle=o.hat;c.fill();c.stroke();c.beginPath();c.ellipse(x,hy-9,6,4,0,Math.PI,0);c.fillStyle=o.hat;c.fill();c.stroke();}c.restore();}
 // ---- glow sprite ----
 const _glow={};function glowS(col){if(_glow[col])return _glow[col];const g=document.createElement('canvas');g.width=g.height=64;const c=g.getContext('2d');const gr=c.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,col+'bb');gr.addColorStop(.4,col+'44');gr.addColorStop(1,col+'00');c.fillStyle=gr;c.fillRect(0,0,64,64);return _glow[col]=g;}
+
+// ---- pixel-art post-process: hard alpha, posterized tones, ordered dither + grain, selective 1px outline ----
+const BAYER=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+function hash2(x,y){let h=(x*374761393+y*668265263)|0;h=(h^(h>>>13))*1274126177;return(h^(h>>>16))&255;}
+function pixelize(cv,o={}){const g=cv.getContext('2d'),W=cv.width,H=cv.height;if(!W||!H)return;const im=g.getImageData(0,0,W,H),d=im.data,A=new Uint8Array(W*H);
+ const grain=o.grain??7,dith=o.dither??5,step=o.step??14;
+ for(let i=0;i<W*H;i++)A[i]=d[i*4+3]>100?1:0;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,k=i*4;if(!A[i]){d[k+3]=0;continue;}
+  const a=d[k+3]/255;let r=d[k],gg=d[k+1],b=d[k+2];if(a<1&&!o.keepA){r=r/a;gg=gg/a;b=b/a;}
+  const n=((hash2(x,y)&15)-7.5)/7.5*grain+(BAYER[(y&3)*4+(x&3)]-7.5)/7.5*dith;
+  r=Math.round((r+n)/step)*step;gg=Math.round((gg+n)/step)*step;b=Math.round((b+n)/step)*step;
+  const edge=o.noOutline?0:(x==0||!A[i-1])+(x==W-1||!A[i+1])+(y==0||!A[i-W])+(y==H-1||!A[i+W]);
+  if(edge){const lum=(r*.3+gg*.59+b*.11);const f=lum<70?.7:.42;r*=f;gg*=f;b*=f;r=Math.max(r,18);gg=Math.max(gg,12);b=Math.max(b,30);}
+  else if(!o.noRim&&y>0&&!A[i-W]&&false){}
+  else if(!o.noRim&&y>1&&A[i-W]&&!A[i-2*W]){r=r*1.12+10;gg=gg*1.12+10;b=b*1.12+10;}
+  d[k]=Math.min(255,Math.max(0,r));d[k+1]=Math.min(255,Math.max(0,gg));d[k+2]=Math.min(255,Math.max(0,b));d[k+3]=255;}
+ g.putImageData(im,0,0);}
+function textureGround(cv){pixelize(cv,{grain:9,dither:6,step:10,noOutline:1,noRim:1});}
+
+// cached pixelized chibi frames
+const _CH={};function chibiPix(g,x,y,o,t,walk){const fr=walk?Math.floor(t*10/Math.PI*2)%4:Math.floor(t*1.2)%2,key=JSON.stringify(o)+'|'+walk+'|'+fr;let e=_CH[key];
+ if(!e){const cv=document.createElement('canvas');cv.width=40*RS;cv.height=64*RS;const c=cv.getContext('2d');c.scale(RS,RS);const tt=walk?(fr+.5)*Math.PI/20:fr*1.3;chibi(c,20,58,o,tt,walk);pixelize(cv,{grain:4,dither:3,step:12});e=_CH[key]={cv};}
+ g.drawImage(e.cv,Math.round(x-20),Math.round(y-58),40,64);}

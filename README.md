@@ -1,4 +1,4 @@
-# Fantasy Town v0.0.1.0
+# Fantasy Town v0.0.1.1
 Family-friendly isometric condo-manager life sim set in the small town of Lumen Town. Plain HTML5 canvas, no build step: open index.html.
 
 ## Town

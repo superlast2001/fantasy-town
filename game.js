@@ -1,7 +1,8 @@
 'use strict';
+let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.1.0',SAVE='fantasytown_save_v9';
-const cv=document.getElementById('c'),ctx=cv.getContext('2d'),menuEl=document.getElementById('menu');
+const VERSION='v0.0.1.1',SAVE='fantasytown_save_v9';
+const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
 const L=(t,e='smile')=>({t,e});
@@ -81,7 +82,7 @@ const LAY={
  office:{cols:14,rows:10,exit:[7,9],spawn:[7,8],home:[7,7],zones:[['bedroom',0,0,9,5],['bath',10,0,4,5],['lobby',0,6,14,4]],hw:[5,[3,4,11]],vw:[[9,0,4]],
   wins:[['y',2,5.5,'bedroom'],['y',11,13,'bath'],['x',6.6,9,'lobby']]}};
 function zoneOf(L,x,y){if(y==L.hw[0])return L.hw[1].includes(x)?'door':'wall';for(const [cx,y0,y1] of L.vw)if(x==cx&&y>=y0&&y<=y1)return'wall';for(const [z,zx,zy,w,h] of L.zones)if(x>=zx&&y>=zy&&x<zx+w&&y<zy+h)return z;return'wall';}
-OBJ.iwall={w:1,d:1,h:20,draw(c,v){box(c,0,0,0,1,1,14,'#f4ece4',{top:'#ffffff'});faceQ(c,0,0,0,1,1,'L',0,1,0,2.5,'#c8bcb0',null);faceQ(c,0,0,0,1,1,'R',0,1,0,2.5,'#b8aca0',null);}};
+const ZI=['kitchen','bedroom','bath','living','lobby'];OBJ.iwall={w:1,d:1,h:40,draw(c,v){const vert=v>=10,col=ZCOL[ZI[v%10]]||'#ff8a7a',o={left:shade(col,.95),right:shade(col,.78),top:'#4a3a4a',r:0};if(vert)box(c,.38,0,0,.24,1,30,col,o);else box(c,0,.38,0,1,.24,30,col,o);if(vert)box(c,.33,0,30,.34,1,2,'#ffffff',{r:0});else box(c,0,.33,30,1,.34,2,'#ffffff',{r:0});if(vert)faceQ(c,.38,0,0,.24,1,'R',0,1,0,4,'#ffffff',null);else faceQ(c,0,.38,0,1,.24,'L',0,1,0,4,'#ffffff',null);}};
 const REQS=['toilet','bed','stove','fridge'];
 function unitHas(id){const R=S.rooms[id],h={};(R?R.furn:[]).forEach(f=>{const F=FURN[f.k];if(F.req)h[F.req]=1;if(F.kit)h[F.kit]=1;});return h;}
 function missing(id){const h=unitHas(id);return REQS.filter(r=>!h[r]);}
@@ -90,7 +91,7 @@ const KITS={kitchen:[['stove','Stove'],['fridge','Fridge'],['sink','Sink'],['cou
 function roomsDone(id){const h=unitHas(id);return Object.entries(KITS).map(([z,L])=>[z,L.filter(([k])=>h[k]).length,L.length]);}
 function homeSpot(id){const a=area&&area.room==id?area:roomArea(id),L=LAY[S.rooms[id].lay];const q=[L.home];const seen=new Set();while(q.length){const [x,y]=q.shift(),k=x+','+y;if(seen.has(k))continue;seen.add(k);if(x<0||y<0||x>=a.cols||y>=a.rows)continue;if(!a.solid[y][x]&&!(x==L.exit[0]&&y==L.exit[1])&&zoneOf(L,x,y)!='door')return[x+.5,y+.5];[[1,0],[-1,0],[0,1],[0,-1]].forEach(([i,j])=>q.push([x+i,y+j]));}return L.home;}
 function roomArea(id){const R=S.rooms[id],L=LAY[R.lay];const tn=id=='office'?null:S.condo.tenants[+id.slice(1)-1];const a={id:'room:'+id,room:id,lay:L,name:id=='office'?'Manager Office':'Floor '+id.slice(1)+' · '+(tn||'Vacant'),cols:L.cols,rows:L.rows,ground:24,tile:[],solid:[],objs:[],npcs:[]};
- layout(a);for(let y=0;y<a.rows;y++)for(let x=0;x<a.cols;x++){const z=zoneOf(L,x,y);a.tile[y][x]=ZFLOOR[z]||24;if(z=='wall'){a.solid[y][x]=1;a.objs.push({k:'iwall',x,y,w:1,d:1,v:0});}}
+ layout(a);for(let y=0;y<a.rows;y++)for(let x=0;x<a.cols;x++){const z=zoneOf(L,x,y);a.tile[y][x]=ZFLOOR[z]||24;if(z=='wall'){a.solid[y][x]=1;const vert=y!=L.hw[0];const fz=vert?zoneOf(L,x+1,y):zoneOf(L,x,y+1);a.objs.push({k:'iwall',x,y,w:1,d:1,v:(vert?10:0)+Math.max(0,ZI.indexOf(fz=='wall'||fz=='door'?'living':fz))});}}
  R.furn.forEach(f=>OB(a,f.k,f.x,f.y,f.v||0,true));a.exit=L.exit;a.spawn=L.spawn;return a;}
 function load(){try{const j=JSON.parse(localStorage.getItem(SAVE));if(j&&j.v==9){S=Object.assign(newState(),j);return 1;}}catch(e){}S=newState();
  if(['v8','v7','v6','v5'].some(v=>localStorage.getItem('fantasytown_save_'+v))){S.gold+=150;S.oldSave=1;}return 0;}
@@ -113,7 +114,7 @@ function groundOf(a){if(a.gcv)return a.gcv;const W=(a.cols+a.rows)*TW/2,H=(a.col
   poly(g,[isoP(0,a.rows),isoP(a.cols,a.rows),isoP(a.cols,a.rows,-6),isoP(0,a.rows,-6)],'#c8b8a8');poly(g,[isoP(a.cols,0),isoP(a.cols,a.rows),isoP(a.cols,a.rows,-6),isoP(a.cols,0,-6)],'#a89888');}
  else{for(let y=0;y<a.rows;y++)for(let x=0;x<a.cols;x++){const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([i,j])=>(a.tile[y+j]||[])[x+i]??2);drawGroundTile(g,a.tile[y][x],x,y,r,nb);}
   const ec='#8a6a4a';poly(g,[isoP(0,a.rows),isoP(a.cols,a.rows),isoP(a.cols,a.rows,-22),isoP(0,a.rows,-22)],shade(ec,.9));poly(g,[isoP(a.cols,0),isoP(a.cols,a.rows),isoP(a.cols,a.rows,-22),isoP(a.cols,0,-22)],shade(ec,.7));}
- a.gox=ox;a.goy=top;return a.gcv=c;}
+ textureGround(c);a.gox=ox;a.goy=top;return a.gcv=c;}
 function goArea(id,pos){area=id.startsWith('room:')?roomArea(id.slice(5)):TOWN;if(!area.room)area.gcv=area.gcv||null;
  S.area=id;const p=pos||area.spawn||[4,5];S.px=(p[0]+.5)*16;S.py=(p[1]+.5)*16;path=null;area.npcs=makeNpcs(area);banner={t:area.name,l:2.2};if(!area.room)decor=false;camSnap=1;}
 function refresh(){const keep=[S.px,S.py];if(area.room)area=roomArea(area.room);area.gcv=null;area.npcs=makeNpcs(area);S.px=keep[0];S.py=keep[1];}
@@ -308,8 +309,8 @@ window.sleep=(passed)=>{closeMenu();S.day++;S.min=7*60;const c=S.condo,rent=rent
  follow=null;for(const n in TN)TN[n].goal=null;syncTenants(true);goArea('room:office',[3,4]);fade=1.2;save(1);toast(passed?'You dozed off... Day '+S.day:'Good morning! Day '+S.day);msg.forEach(toast);};
 // ---------- geometry / pathing ----------
 const ptx=()=>S.px/16,pty=()=>S.py/16;
-let cam={x:0,y:0},Z=2;
-function screenToTile(sx,sy){const wx=(sx-cv.width/2)/Z+cam.x,wy=(sy-cv.height/2)/Z+cam.y;return[Math.floor((wx/16+wy/8)/2),Math.floor((wy/8-wx/16)/2)];}
+let cam={x:0,y:0},camS={x:0,y:0},Z=2;
+function screenToTile(sx,sy){const BW=Math.ceil(cv.width/PX),BH=Math.ceil(cv.height/PX),wx=(sx/PX-BW/2)/2+camS.x,wy=(sy/PX-BH/2)/2+camS.y;return[Math.floor((wx/16+wy/8)/2),Math.floor((wy/8-wx/16)/2)];}
 function walkableOn(a,x,y){return!(x<0||y<0||x>=a.cols||y>=a.rows||a.solid[y][x]);}
 const walkable=(x,y)=>walkableOn(area,x,y);
 function bfsOn(a,sx,sy,goal){const key=(x,y)=>y*999+x,prev=new Map([[key(sx,sy),null]]),q=[[sx,sy]];while(q.length){const [x,y]=q.shift();if(goal(x,y)){const p=[];let c=[x,y];while(c){p.unshift(c);c=prev.get(key(c[0],c[1]));}return p;}
@@ -373,32 +374,34 @@ let tagRects=[],hotRects=[],bOff=0,sc=1;
 function resize(){cv.width=innerWidth;cv.height=innerHeight;sc=Math.max(.72,Math.min(1.4,Math.min(cv.width/1100,cv.height/560)));$('rot').style.display=isTouch&&innerHeight>innerWidth?'flex':'none';}
 addEventListener('resize',resize);resize();
 function lightList(a){const Ls=[];a.objs.forEach(o=>{const d=OBJ[o.k]||FURN[o.k];(d&&d.light||[]).forEach(([x,y,z,r,c])=>Ls.push([o.x+x,o.y+y,z,r,c]));if(o.k=='condo')for(let f=0;f<=S.condo.floors;f++)Ls.push([o.x+2.5,o.y+4,14+f*26,44,'#ffd88a']);});return Ls;}
-function W2S(x,y,z){const [ix,iy]=isoP(x,y,z);return[cv.width/2+(ix-cam.x)*Z,cv.height/2+(iy-cam.y)*Z];}
+function W2S(x,y,z){const [ix,iy]=isoP(x,y,z);const BW=Math.ceil(cv.width/PX),BH=Math.ceil(cv.height/PX);return[(BW/2+(ix-camS.x)*2)*PX,(BH/2+(iy-camS.y)*2)*PX];}
 const PLOOK={body:'#3a8aff',hair:'#6a3a1a',style:'short',hat:'#e8c050',pants:'#2a3a6a'};
 function tenantAtScreen(sx,sy){let best=null,bd=1e9;tenantsHere().forEach(t=>{const [x,y]=W2S(t.px,t.py,0),dx=sx-x,dy=sy-y;if(Math.abs(dx)<12*Z&&dy<5*Z&&dy>-34*Z){const d=Math.abs(dx)+Math.abs(dy+14*Z);if(d<bd){bd=d;best=t;}}});return best;}
 function drawScene(t,night){const a=area,W=cv.width,H=cv.height;
  const fit=a.room?Math.min(W/((a.cols+a.rows)*TW/2+40),(H-90)/((a.cols+a.rows)*TH/2+66)):0;Z=a.room?Math.max(1.15,Math.min(2.4,fit)):Math.max(1.5,Math.min(3.2,H/(isTouch?220:300)));
  let fx=ptx(),fy=pty();const ft=follow&&TN[follow];if(ft&&!a.room&&!ft.inRoom){fx=ft.px;fy=ft.py;}
- const [px,py]=isoP(fx,fy);let tx2=px,ty2=py-10;if(a.room&&fit>=1.15){const [mx,my]=isoP(a.cols/2,a.rows/2);tx2=mx;ty2=my-26;}if(window.ZOOM){Z=window.ZOOM;const [mx,my]=isoP(...window.CAMT);tx2=mx;ty2=my;camSnap=1;}
- if(camSnap){cam.x=tx2;cam.y=ty2;camSnap=0;}else{cam.x+=(tx2-cam.x)*.12;cam.y+=(ty2-cam.y)*.12;}
+ const [px,py]=isoP(fx,fy);let tx2=px,ty2=py-10;if(a.room&&fit>=1.15){const [mx,my]=isoP(a.cols/2,a.rows/2);tx2=mx;ty2=my-26;}PX=Math.max(1,Math.round(Z/2));if(window.ZOOM){Z=window.ZOOM;PX=Math.max(1,Math.round(Z/2));const [mx,my]=isoP(...window.CAMT);tx2=mx;ty2=my;camSnap=1;}
+ Z=2*PX;if(camSnap){cam.x=tx2;cam.y=ty2;camSnap=0;}else{cam.x+=(tx2-cam.x)*.12;cam.y+=(ty2-cam.y)*.12;}
+ const BW=Math.ceil(W/PX),BH=Math.ceil(H/PX);if(PB.width!=BW||PB.height!=BH){PB.width=BW;PB.height=BH;}ctx=PBC;const TX=Math.round(BW/2-cam.x*2),TY=Math.round(BH/2-cam.y*2);
  const sky=ctx.createLinearGradient(0,0,0,H);if(a.room){sky.addColorStop(0,'#3a2c4a');sky.addColorStop(1,'#6a4a6a');}else{sky.addColorStop(0,night>.5?'#141432':'#9ad8ff');sky.addColorStop(1,night>.5?'#2a1a4a':'#e8f6ff');}
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
  if(a.room){ctx.fillStyle='rgba(255,255,255,.05)';for(let i=-H;i<W;i+=40){ctx.beginPath();ctx.moveTo(i,H);ctx.lineTo(i+H,0);ctx.lineTo(i+H+16,0);ctx.lineTo(i+16,H);ctx.fill();}}
- ctx.setTransform(Z,0,0,Z,W/2-cam.x*Z,H/2-cam.y*Z);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.setTransform(2,0,0,2,TX,TY);ctx.imageSmoothingEnabled=false;
  const gc=groundOf(a);ctx.drawImage(gc,-a.gox,-a.goy,gc.width/RS,gc.height/RS);
  if(!a.room)for(let i=0;i<9;i++){const x=4+i%3,y=17+Math.floor(i/3),[cx,cy]=isoP(x+.5,y+.5);ctx.strokeStyle=`rgba(255,255,255,${.25+.3*Math.sin(t*2+i)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(cx-4,cy);ctx.quadraticCurveTo(cx,cy-1.5,cx+4,cy);ctx.stroke();}
  const Dr=[];a.objs.forEach(o=>{const F=FURN[o.k];Dr.push({k:o.x+o.w/2+o.y+o.d/2-(F&&F.flat?50:F&&F.wall?45:0),f:()=>{if(o.k=='condo')drawSprite(ctx,condoSprite(S.condo.floors,S.condo.building),o.x,o.y);else drawSprite(ctx,spriteFor(o.k,o.v||0),o.x,o.y);}});});
- a.npcs.forEach(n=>Dr.push({k:n.px/16+n.py/16,f:()=>{const [x,y]=isoP(n.px/16,n.py/16);chibi(ctx,x,y,{...n.look,face:n.face},t+n.px,!!(n.dx||n.dy));}}));
- tenantsHere().forEach(tn=>Dr.push({k:tn.px+tn.py,f:()=>{const [x,y]=isoP(tn.px,tn.py);if(selT==tn.n){ell(ctx,x,y,9+Math.sin(t*5),4.5,null,follow==tn.n?'#ff6ab0':'#ffd84a',1.6);}const T=TN[tn.n];chibi(ctx,x,y,{...CHARS[tn.n].look,face:T&&T.path?T.face:'down'},t*1.3+tn.px,!!(T&&T.path));}}));
+ a.npcs.forEach(n=>Dr.push({k:n.px/16+n.py/16,f:()=>{const [x,y]=isoP(n.px/16,n.py/16);chibiPix(ctx,x,y,{...n.look,face:n.face},t+n.px,!!(n.dx||n.dy));}}));
+ tenantsHere().forEach(tn=>Dr.push({k:tn.px+tn.py,f:()=>{const [x,y]=isoP(tn.px,tn.py);if(selT==tn.n){ell(ctx,x,y,9+Math.sin(t*5),4.5,null,follow==tn.n?'#ff6ab0':'#ffd84a',1.6);}const T=TN[tn.n];chibiPix(ctx,x,y,{...CHARS[tn.n].look,face:T&&T.path?T.face:'down'},t*1.3+tn.px,!!(T&&T.path));}}));
  const pface=Math.abs(S.fx-S.fy)>Math.abs(S.fx+S.fy)?(S.fx>S.fy?'right':'left'):(S.fx+S.fy>0?'down':'up');
- Dr.push({k:ptx()+pty(),f:()=>{const [x,y]=isoP(ptx(),pty());chibi(ctx,x,y,{...PLOOK,face:pface},walkT,moving);}});
+ Dr.push({k:ptx()+pty(),f:()=>{const [x,y]=isoP(ptx(),pty());chibiPix(ctx,x,y,{...PLOOK,face:pface},walkT,moving);}});
  Dr.sort((p,q)=>p.k-q.k).forEach(d=>d.f());
  parts.forEach(p=>{const [x,y]=isoP(p.x,p.y,p.z);ell(ctx,x,y,1.3,1.3,p.c,null);});
  if(path&&path.length){const [gx,gy]=path[path.length-1],[cx,cy]=isoP(gx+.5,gy+.5);ell(ctx,cx,cy,6+Math.sin(t*6),3+Math.sin(t*6)*.5,null,'#ffffff',1.2);}
  if(decor){const g=furnGhost(),ok=!canFurn(g)&&(hold||S.finv[g.k]>0);ctx.globalAlpha=.5;poly(ctx,[isoP(g.x,g.y),isoP(g.x+g.w,g.y),isoP(g.x+g.w,g.y+g.d),isoP(g.x,g.y+g.d)],ok?'#3dff9a':'#ff5070','#fff',1.2);ctx.globalAlpha=.75;drawSprite(ctx,spriteFor(g.k),g.x,g.y);ctx.globalAlpha=1;}
  const nf=a.room?night*.15:night;ctx.setTransform(1,0,0,1,0,0);if(nf>0){ctx.fillStyle=`rgba(24,16,70,${.5*nf})`;ctx.fillRect(0,0,W,H);}
- ctx.setTransform(Z,0,0,Z,W/2-cam.x*Z,H/2-cam.y*Z);ctx.globalCompositeOperation='lighter';const ga=a.room?.25+.3*night:.06+.9*night;
+ ctx.setTransform(2,0,0,2,TX,TY);ctx.globalCompositeOperation='lighter';const ga=a.room?.25+.3*night:.06+.9*night;
  lightList(a).forEach(([x,y,z,r,c])=>{const [sx,sy]=isoP(x,y,z);ctx.globalAlpha=ga*.85;ctx.drawImage(glowS(c),sx-r,sy-r*.75,r*2,r*1.5);});ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+ ctx=mainCtx;ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.drawImage(PB,0,0,BW*PX,BH*PX);camS.x=(BW/2-TX)/2;camS.y=(BH/2-TY)/2;
  tagRects=[];ctx.setTransform(1,0,0,1,0,0);
  const tag=(x,y,z,label,stars,tx,ty,col='rgba(50,50,66,.93)',small)=>{const [sx,sy]=W2S(x,y,z);ctx.font=`bold ${Math.round((small?10:11)*sc)}px sans-serif`;const w=ctx.measureText(label).width+(small?14:24)*sc,h=(small?17:21)*sc;ctx.beginPath();ctx.roundRect(sx-w/2,sy-h,w,h,h/2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
   ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,sx,sy-h/2+.5);ctx.beginPath();ctx.moveTo(sx-4,sy);ctx.lineTo(sx,sy+5);ctx.lineTo(sx+4,sy);ctx.fillStyle=col;ctx.fill();
@@ -459,7 +462,7 @@ let lastCard='';function updateButtons(){const modal=showMap||showCondo||showApp
  $('tcName').textContent=t.n;$('tcInfo').innerHTML=`${'♥'.repeat(frLv(t.n))}${'♡'.repeat(5-frLv(t.n))} Lv${frLv(t.n)} · scenes ${f.scene}/3<br>${loc} · ☺ ${happiness(t.n)}%`;
  $('tFollow').textContent=follow==t.n?'STOP':'FOLLOW';$('tHang').classList.toggle('dim',f.hang==S.day);}
 let last=performance.now(),T0=0;
-function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T0+=dt;update(dt);const night=nightF();
+function frame(now){ctx=mainCtx;const dt=Math.min(.05,(now-last)/1000);last=now;T0+=dt;update(dt);const night=nightF();
  if(showApps)drawApps(T0);else if(showMap)drawMap(T0);else if(showCondo)drawCondo(T0);else{drawScene(T0,night);drawHUD(T0);}
  updateTop();updateButtons();requestAnimationFrame(frame);}
 syncTenants(true);
