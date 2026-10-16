@@ -65,7 +65,7 @@ function drawGymNpc(c,x,y,s,t,walk){const sk=SKIN[s.skin],pose=walk?'walk':s.act
   default:aL=[-6,-4+sh*.4];aR=[6,-4-sh*.4];bob=sh*.3;}
  c.save();c.translate(x,y);if(s.flip)c.scale(-1,1);
  // ground shadow
- const sg=c.createRadialGradient(0,0,0,0,0,9);sg.addColorStop(0,'rgba(30,20,40,.35)');sg.addColorStop(1,'rgba(30,20,40,0)');c.fillStyle=sg;c.beginPath();c.ellipse(0,0,9,3.6,0,0,7);c.fill();
+ if(!s.noShadow){const sg=c.createRadialGradient(0,0,0,0,0,9);sg.addColorStop(0,'rgba(30,20,40,.35)');sg.addColorStop(1,'rgba(30,20,40,0)');c.fillStyle=sg;c.beginPath();c.ellipse(0,0,9,3.6,0,0,7);c.fill();}
  c.translate(0,-bob);const hip=-11.5+sq*.7+(seated?-2:0),neck=-22.5+sq,top=s.top,tc=s.tc,bc=s.bc;
  // legs
  const leg=(dx,ph)=>{let kx=dx,ky=hip+(seated?5:6)-(seated?0:sq*.3),fx=dx+ph*.6,fy=-1;if(seated){const a=T*8+(dx>0?Math.PI:0);fx=dx+Math.cos(a)*2.4;fy=-3+Math.sin(a)*2.4;kx=dx+2.5;ky=hip+2;}
@@ -80,7 +80,7 @@ function drawGymNpc(c,x,y,s,t,walk){const sk=SKIN[s.skin],pose=walk?'walk':s.act
  if(s.bottom=='shorts')gBlob(c,[[-5.2,hip-1.6],[5.2,hip-1.6],[5.9,hip+4],[1,hip+4.4],[0,hip+2],[-1,hip+4.4],[-5.9,hip+4]],bc);else gBlob(c,[[-5.2,hip-1.6],[5.2,hip-1.6],[5.5,hip+2.6],[-5.5,hip+2.6]],bc);
  if(s.stripe){c.fillStyle=s.stripe;c.fillRect(4.3,hip-2.4,.9,6);c.fillRect(-5.2,hip-2.4,.9,6);}
  c.restore();c.save();c.translate(lean,0);
- const hb=pose=='run'||pose=='walk'?0:Math.sin(T*3)*.3,hx=0,hy=neck-9.6+hb,R=s.R||10.6;hairBack(c,s,hx,hy,R,T);
+ const hb=pose=='run'||pose=='walk'?0:Math.sin(T*3)*.3,hx=0,hy=neck-9.6+hb,R=(s.R||10.6)*.9;hairBack(c,s,hx,hy,R,T);
  // back arm (left) behind torso when crossing? draw both after torso for clarity, but upper-arm roots behind
  const shL=[-5.2,neck+2.4],shR=[5.2,neck+2.4];const arm=(sh0,hnd,side)=>{const ex=(sh0[0]+hnd[0])/2+side*(hnd[1]<-20?5.5:1.8),ey=(sh0[1]+(neck+hnd[1]+6))/2+1;const hx2=hnd[0],hy2=neck+hnd[1]+18;
   const sleeve=s.top=='tee'||s.top=='hoodie';gCap(c,sh0[0],sh0[1],ex,ey,3.6,sleeve?tc:sk[0],sleeve?shade(tc,.82):sk[1]);gCap(c,ex,ey,hx2,hy2,3.2,s.top=='hoodie'?tc:sk[0],s.top=='hoodie'?shade(tc,.82):sk[1]);
@@ -112,7 +112,7 @@ function drawGymNpc(c,x,y,s,t,walk){const sk=SKIN[s.skin],pose=walk?'walk':s.act
  gFace(c,s,hx,hy,R,mood,T);hairFront(c,s,hx,hy,R);
  if(up){if(aL[1]<-20)hl=arm(shL,aL,-1);else hl=arm(shL,aL,-1);hr=arm(shR,aR,1);}
  if(s.cap){gBlob(c,[[hx-R*1.02,hy-R*.35],[hx-R*1.05,hy-R*1.25,hx,hy-R*1.22],[hx+R*1.05,hy-R*1.25,hx+R*1.02,hy-R*.35]],s.cap);gBlob(c,[[hx-R*.9,hy-R*.4],[hx+R*1.5,hy-R*.42],[hx+R*1.45,hy-R*.22],[hx-R*.9,hy-R*.24]],shade(s.cap,.8),.9);gEll(c,hx,hy-R*.8,R*.18,R*.14,'#ffffff',.6);}
- if(pose=='pullup')gCap(c,-13,hl[1]-.5,13,hr[1]-.5,1.3,'#d8dce4');
+ if(pose=='pullup'&&!s.z&&!s.noBar)gCap(c,-13,hl[1]-.5,13,hr[1]-.5,1.3,'#d8dce4');
  if(s.earbuds)[-1,1].forEach(sd=>gEll(c,hx+sd*R*1.0,hy+R*.2,R*.1,R*.1,'#ffffff',.6));
  c.restore();c.restore();}
 // --- cast: 14 unique gym-goers (all adults, fully dressed in normal gym wear)
@@ -132,6 +132,39 @@ const GYMCAST=[
  {n:'Kenji',skin:'olive',hair:'spiky',hc:'#2a2a3a',eye:'#3a3a5a',top:'hoodie',tc:'#3a4a5a',bottom:'leggings',bc:'#1a1a22',shoe:'#ffd84a',cap:'#ffd84a',act:'wave',talks:['Yo! You\'re the condo manager, right? Ares talks about you a lot.','Just finished cardio. Never again. Until tomorrow.']},
  {n:'Bree',skin:'pale',hair:'ponytail',hc:'#ffd84a',eye:'#3a9a6a',lash:1,top:'tee',tc:'#3dbf6a',logo:'#ffffff',bottom:'leggings',bc:'#2a3a2a',shoe:'#ff5a5a',band:'#ffffff',act:'run',talks:['Interval day! Sprint, walk, sprint!','The view from the treadmill is... the wall. Classic.']}];
 GYMCAST.forEach((g,i)=>{g.seed=i*1.37;g.flip=i%3==1;if(g.act=='walk2')g.act='idle';CHARS[g.n]={look:{gym:g},talks:g.talks.map((x,j)=>[L(x,j?'smile':'happy')]),pers:'Gym regular'};});
-const _baseChibiG=chibi;chibi=function(c,x,y,o,t,walk){if(o&&o.gym)return drawGymNpc(c,x,y-(o.gym.z||0),{...o.gym,flip:o.face=='left'?1:o.face=='right'?0:o.gym.flip},t,walk&&!o.gym.fixed);return _baseChibiG(c,x,y,o,t,walk);};
+// ---- painted pass (v0.0.2.2): the flat vector chibi is rendered at 4x offscreen, then given soft painted shading
+// (top-left key light, warm rim light, ambient occlusion toward the feet), a softened interior and a thick dark outline,
+// so it sits next to Ares' painted sheet chibi. Drawn ~13% larger to match his 52px full-body sprite.
+const GP={SC:4,W:72,H:92,OX:36,OY:82,K:1.04};
+let _gpOff=null,_gpM=null,_gpT=null;function gpCanvas(){if(!_gpOff){const mk=()=>{const q=document.createElement('canvas');q.width=GP.W*GP.SC;q.height=GP.H*GP.SC;return q;};_gpOff=mk();_gpM=mk();_gpT=mk();}return[_gpOff,_gpM,_gpT];}
+const _gpCache={};function drawGymPainted(c,x,y,s,t,walk){const ck=(s.n||'')+(s.flip?1:0)+(walk?1:0),fk=Math.floor(t*12);let ce=_gpCache[ck];if(!ce){const q=document.createElement('canvas');q.width=GP.W*GP.SC;q.height=GP.H*GP.SC;ce=_gpCache[ck]={k:-1,cv:q};}
+ if(ce.k!==fk){ce.k=fk;gpRender(s,fk/12,walk);const q=ce.cv.getContext('2d');q.clearRect(0,0,q.canvas.width,q.canvas.height);q.drawImage(_gpT,0,0);}
+ gpBlit(c,x,y,ce.cv);}
+function gpRender(s,t,walk){const [o,m,tp]=gpCanvas(),S=GP.SC,W=o.width,H=o.height,g=o.getContext('2d',{willReadFrequently:true}),gm=m.getContext('2d'),gt=tp.getContext('2d');
+ g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.setTransform(S,0,0,S,GP.OX*S,GP.OY*S);drawGymNpc(g,0,0,{...s,noShadow:1},t,walk);g.setTransform(1,0,0,1,0,0);
+ // silhouette
+ gm.setTransform(1,0,0,1,0,0);gm.clearRect(0,0,W,H);gm.drawImage(o,0,0);gm.globalCompositeOperation='source-in';gm.fillStyle='#000';gm.fillRect(0,0,W,H);gm.globalCompositeOperation='source-over';
+ const D0=g.getImageData(0,0,W,H);
+ // soften interior a touch (painterly blend of the hard vector shapes)
+ gt.setTransform(1,0,0,1,0,0);gt.clearRect(0,0,W,H);gt.filter='blur(1px)';gt.drawImage(o,0,0);gt.filter='none';g.globalAlpha=.4;g.globalCompositeOperation='source-atop';g.drawImage(tp,0,0);g.globalAlpha=1;
+ // key light top-left / shadow bottom-right
+ const top=(GP.OY-50)*S,bot=GP.OY*S;let gr=g.createLinearGradient(GP.OX*S-28*S,top,GP.OX*S+26*S,bot);gr.addColorStop(0,'rgba(255,246,230,.30)');gr.addColorStop(.45,'rgba(255,240,220,0)');gr.addColorStop(.62,'rgba(40,20,60,0)');gr.addColorStop(1,'rgba(40,16,60,.42)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ gr=g.createLinearGradient(0,(GP.OY-14)*S,0,bot);gr.addColorStop(0,'rgba(30,14,40,0)');gr.addColorStop(1,'rgba(30,14,40,.35)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ // warm rim light on the upper-left edge
+ gt.clearRect(0,0,W,H);gt.drawImage(m,0,0);gt.globalCompositeOperation='destination-out';gt.drawImage(m,2.2*S,1.6*S);gt.globalCompositeOperation='source-in';gt.fillStyle='rgba(255,222,170,1)';gt.fillRect(0,0,W,H);gt.globalCompositeOperation='source-over';
+ g.globalCompositeOperation='source-atop';g.globalAlpha=.5;g.filter='blur(.8px)';g.drawImage(tp,0,0);g.filter='none';g.globalAlpha=1;
+ // cool bounce on the lower-right edge
+ gt.clearRect(0,0,W,H);gt.drawImage(m,0,0);gt.globalCompositeOperation='destination-out';gt.drawImage(m,-1.6*S,-1.2*S);gt.globalCompositeOperation='source-in';gt.fillStyle='rgba(120,150,255,1)';gt.fillRect(0,0,W,H);gt.globalCompositeOperation='source-over';
+ g.globalCompositeOperation='source-atop';g.globalAlpha=.22;g.drawImage(tp,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
+ // restore the crisp dark line art on top of the shading
+ {const D1=g.getImageData(0,0,W,H),a0=D0.data,a1=D1.data;for(let i=0;i<a0.length;i+=4){if(a0[i+3]>200&&a0[i]+a0[i+1]+a0[i+2]<150){a1[i]=a0[i];a1[i+1]=a0[i+1];a1[i+2]=a0[i+2];a1[i+3]=a0[i+3];}}g.putImageData(D1,0,0);}
+ // thick dark outline behind
+ gt.clearRect(0,0,W,H);const r=.55*S;for(let i=0;i<12;i++){const a=i/12*Math.PI*2;gt.drawImage(m,Math.cos(a)*r,Math.sin(a)*r);}gt.globalCompositeOperation='source-in';gt.fillStyle='#120a16';gt.fillRect(0,0,W,H);gt.globalCompositeOperation='source-over';
+ gt.drawImage(o,0,0);
+ }
+function gpBlit(c,x,y,tp){
+ const k=GP.K;const sg=c.createRadialGradient(x,y,0,x,y,11*k);sg.addColorStop(0,'rgba(20,10,30,.38)');sg.addColorStop(1,'rgba(20,10,30,0)');c.save();c.translate(x,y);c.scale(1,.38);c.translate(-x,-y);c.fillStyle=sg;c.beginPath();c.arc(x,y,11*k,0,7);c.fill();c.restore();
+ c.save();c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(tp,x-GP.OX*k,y-GP.OY*k,GP.W*k,GP.H*k);c.restore();}
+const _baseChibiG=chibi;chibi=function(c,x,y,o,t,walk){if(o&&o.gym)return drawGymPainted(c,x,y-(o.gym.z||0),{...o.gym,flip:o.face=='left'?1:o.face=='right'?0:o.gym.flip},t,walk&&!o.gym.fixed);return _baseChibiG(c,x,y,o,t,walk);};
 const _basePortraitG=portrait;const _gpc={};portrait=function(name,expr){const g=GYMCAST.find(q=>q.n==name);if(!g)return _basePortraitG(name,expr);if(_gpc[name])return _gpc[name];
- const cv=document.createElement('canvas');cv.width=420;cv.height=520;const c=cv.getContext('2d');c.scale(9,9);drawGymNpc(c,420/18,520/9-2,{...g,flip:0,act:'idle'},0,false);return _gpc[name]=cv;};
+ const cv=document.createElement('canvas');cv.width=420;cv.height=520;const c=cv.getContext('2d');drawGymPainted(c,0,0,{...g,flip:0,act:'idle'},0,false);c.clearRect(0,0,420,520);c.save();c.scale(7.4,7.4);drawGymPainted(c,420/14.8,520/7.4-6,{...g,flip:0,act:'idle'},0,false);c.restore();return _gpc[name]=cv;};

@@ -11,7 +11,7 @@ const GYM_FURN=[
  {k:'plant_snake',x:0,y:14},{k:'plant_snake',x:21,y:14},{k:'beanbag_gym',x:18,y:14},
  ...[1,2,3,4,5,6,7].map(x=>({k:'mirrorwall',x,y:0,v:0})),{k:'poster_gym2',x:9,y:0,v:0},{k:'poster_gym3',x:11,y:0,v:0},{k:'poster_gym',x:13,y:0,v:0},{k:'poster_gym2',x:16,y:0,v:0},
  ...[2,3,4,5,6].map(y=>({k:'mirrorwall',x:0,y,v:1})),{k:'poster_gym3',x:0,y:9,v:1}];
-const GYM_SPOTS=[['Mika',2.5,3.35],['Bree',4.5,3.35],['Hana',9.8,3.15,12],['Sora',13.95,2.75,3],['Leon',18,2.85],['Jett',20.5,5.95],['Big Dano',3.05,9.3],['Tomas',6.4,8.5],['Zuri',9.3,9.2],
+const GYM_SPOTS=[['Mika',2.5,3.35],['Bree',4.5,3.35],['Hana',10.05,2.9,12],['Sora',13.95,2.75,3],['Leon',18,2.6,8],['Jett',20.5,5.95],['Big Dano',3.05,9.3],['Tomas',6.4,8.5],['Zuri',9.3,9.2],
  ['Priya',14.5,9.3],['Coach Rin',16.5,9.3],['Gus',19.6,12.9],['Kenji',11.2,13.2],['Old Ben',7.5,13.4]];
 function ensureGym(){S.rooms.gym={lay:'gymhall',furn:GYM_FURN.map(f=>({...f}))};}
 ensureGym();

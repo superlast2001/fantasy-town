@@ -8,18 +8,21 @@ const ARES_IMG={};const ARES_SLICES=['cg','turn_front','turn_right','turn_back',
  'chibi_front','chibi_right','chibi_back','chibi_left',...[0,1,2,3,4,5,6].map(i=>'walk_'+i),
  ...['idle','smile','blush','angry','surprised','happy','sit'].map(e=>'emote_'+e)];
 ARES_SLICES.forEach(n=>{const im=new Image();im.src='assets/ares/'+n+'.png';ARES_IMG[n]=im;});
+// v0.0.2.2: 3x Real-ESRGAN copies of the in-world chibi frames (upscale_chibi.py) so zoomed phones never enlarge the tiny slices
+ARES_SLICES.filter(n=>/^(chibi_|walk_|emote_)/.test(n)).forEach(n=>{const im=new Image();im.src='assets/ares/'+n+'_hd.png';ARES_IMG[n+'_hd']=im;});
 const aresReady=n=>{const i=ARES_IMG[n];return i&&i.complete&&i.naturalWidth>0;};
 ['icon_heart','icon_hearts','icon_angry','icon_surprise','icon_note'].forEach(n=>{const im=new Image();im.src='assets/ares/'+n+'.png';ARES_IMG[n]=im;});
 // Dialogue art: the CG shown at native resolution in a clean frame, keeping its own painted background;
 // only the frame's alpha is feathered (sides) and faded (bottom, behind the text box) so no crop edge shows.
 let _adc=null,_adcHD=null;
-{const im=new Image();im.src='assets/ares/cg_full.png';ARES_IMG.cg_full=im;const hd=new Image();hd.src='assets/ares/cg_full_hd.png';ARES_IMG.cg_full_hd=hd;}
+{const im=new Image();im.src='assets/ares/cg_full.png';ARES_IMG.cg_full=im;const hd=new Image();hd.src='assets/ares/cg_full_hd.png';ARES_IMG.cg_full_hd=hd;const xl=new Image();xl.src='assets/ares/cg_full_xl.png';ARES_IMG.cg_full_xl=xl;}
 // Big model, whole from head to toe (assets/ares/cg_full.png: the sheet's CG with the limbs the panel cut off completed
 // offline), standing over the live, dimmed location. Soft warm rim glow only; no fades, no crop.
 // Portrait: cg_full_hd.png = Real-ESRGAN anime x4 of cg_full (head verified against the sheet), Lanczos-reduced to 1200px wide,
-// so phones (up to ~1200 device px wide) never upscale it.
-function aresDialogueArtHD(){if(_adcHD)return _adcHD;if(!aresReady('cg_full_hd'))return null;const b=ARES_IMG.cg_full_hd,c=document.createElement('canvas');c.width=b.naturalWidth;c.height=b.naturalHeight;
- const g=c.getContext('2d');g.save();g.shadowColor='rgba(255,214,190,.45)';g.shadowBlur=18;g.drawImage(b,0,0);g.restore();g.drawImage(b,0,0);return _adcHD=c;}
+// so phones never upscale it. v0.0.2.2: portrait uses cg_full_xl.png (same accepted 4x ESRGAN, Lanczos to 1500px) because
+// Ares is now drawn at 1.06x the screen width (≈1240 device px at dpr 3).
+function aresDialogueArtHD(){if(_adcHD)return _adcHD;const xk=aresReady('cg_full_xl')?'cg_full_xl':null;if(!xk)return null;const b=ARES_IMG[xk],c=document.createElement('canvas');c.width=b.naturalWidth;c.height=b.naturalHeight;
+ const g=c.getContext('2d');g.save();g.shadowColor='rgba(255,214,190,.45)';g.shadowBlur=22;g.drawImage(b,0,0);g.restore();g.drawImage(b,0,0);return _adcHD=c;}
 function aresDialogueArt(){if(innerHeight>innerWidth){const hd=aresDialogueArtHD();if(hd)return hd;}if(_adc)return _adc;if(!aresReady('cg_full'))return null;const b=ARES_IMG.cg_full,P=12,W=b.naturalWidth+P*2,H=b.naturalHeight+P*2;
  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
  g.save();g.shadowColor='rgba(255,214,190,.5)';g.shadowBlur=9;g.drawImage(b,P,P);g.restore();g.drawImage(b,P,P);return _adc=c;}
@@ -32,12 +35,12 @@ function aresPortrait(expr){if(_apc.b)return _apc.b;const b=ARES_IMG.cg;const c=
  const W=b.naturalWidth,H=Math.round(W*520/420);c.width=W;c.height=H;c.getContext('2d').drawImage(b,0,0,W,H,0,0,W,H);return _apc.b=c;}
 // in-world sprite: chibi directions + walk frames; emotes use the sheet's emote sprites
 const ARES_ICON={heart:'icon_heart',angry:'icon_angry',surprise:'icon_surprise',note:'icon_note'}; // no sweat mark on the sheet
-const ARES_H=44; // on-screen chibi height (px); sprites are only ever drawn smaller than native
+const ARES_H=52; // on-screen chibi height (px); sprites are only ever drawn smaller than native
 function aresChibi(c,x,y,o,t,walk){const face=o.face||'down',sd=face=='left'||face=='right';let n,flip=false;
  if(o.sit)n='emote_sit';else if(walk&&sd){n='walk_'+(Math.floor(t*12)%7);flip=face=='left';}else if(o.flex&&!walk)n='emote_happy';
  else n={down:'chibi_front',right:'chibi_right',up:'chibi_back',left:'chibi_left'}[face]||'chibi_front';
  const sg=c.createRadialGradient(x,y,0,x,y,11);sg.addColorStop(0,'rgba(20,10,30,.38)');sg.addColorStop(1,'rgba(20,10,30,0)');c.save();c.translate(x,y);c.scale(1,.38);c.translate(-x,-y);c.fillStyle=sg;c.beginPath();c.arc(x,y,11,0,7);c.fill();c.restore();
- if(!aresReady(n)||!aresReady('chibi_front'))return;const im=ARES_IMG[n],k=ARES_H/ARES_IMG.chibi_front.naturalHeight,w=im.naturalWidth*k,h=im.naturalHeight*k;
+ if(!aresReady(n)||!aresReady('chibi_front'))return;const im0=ARES_IMG[n],k=ARES_H/ARES_IMG.chibi_front.naturalHeight,w=im0.naturalWidth*k,h=im0.naturalHeight*k,im=aresReady(n+'_hd')?ARES_IMG[n+'_hd']:im0;
  const bob=walk&&!sd?Math.abs(Math.sin(t*10))*1.2:0;c.save();c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.translate(x,y-bob);if(flip)c.scale(-1,1);c.drawImage(im,-w/2,-h+1,w,h);c.restore();
  const ic=o.emote&&ARES_ICON[o.emote];if(ic&&aresReady(ic)){const I=ARES_IMG[ic],s=Math.min(1,16/I.naturalHeight),iw=I.naturalWidth*s,ih=I.naturalHeight*s,hb=Math.sin(t*4)*1.2;
   const ax=x+15,ay=y-bob-ARES_H+8+hb; // beside the top of his head (clear of the name tag), follows him

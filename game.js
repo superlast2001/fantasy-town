@@ -1,7 +1,7 @@
 'use strict';
 const DPR=Math.min(2,window.devicePixelRatio||1);let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.2.1',SAVE='fantasytown_save_v10';
+const VERSION='v0.0.2.2',SAVE='fantasytown_save_v10';
 const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -358,10 +358,10 @@ function drawApps(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height;
 // ---------- dialogue ----------
 const dlg={on:false,lines:[],i:0,ch:0,name:'',hidden:false};
 function startDialogue(name,lines){Object.assign(dlg,{on:true,lines,i:0,ch:0,name,hidden:false});$('dlg').style.display='block';document.body.classList.add('dlgon');$('dlgName').textContent=name.toUpperCase();showLine();for(const k in keys)keys[k]=0;}
-function showLine(){const l=dlg.lines[dlg.i];const pc=$('dlgPortrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);const AA=dlg.name=='Ares'&&typeof aresDialogueArt=='function'&&aresDialogueArt(),fc=$('dlgFace');if(AA){const dpr=window.devicePixelRatio||1;if(pc.width!=AA.width){pc.width=AA.width;pc.height=AA.height;}g.clearRect(0,0,pc.width,pc.height);g.drawImage(AA,0,0);if(innerHeight>innerWidth){const cwid=Math.min(innerWidth*1.02,AA.width/dpr);pc.style.height=(cwid*AA.height/AA.width)+'px';pc.style.left=Math.round((innerWidth-cwid)/2)+'px';pc.style.top=Math.round(innerHeight*.085)+'px';pc.style.bottom='auto';}
- else{pc.style.height=Math.min(AA.height/dpr,innerHeight*.9)+'px';pc.style.left=Math.round(innerWidth*.03)+'px';pc.style.bottom=Math.round(innerHeight*.02)+'px';pc.style.top='';}pc.style.filter='none';pc.style.transform='none';
+function showLine(){const l=dlg.lines[dlg.i];const pc=$('dlgPortrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);const AA=dlg.name=='Ares'&&typeof aresDialogueArt=='function'&&aresDialogueArt(),fc=$('dlgFace');if(AA){const dpr=window.devicePixelRatio||1;if(pc.width!=AA.width){pc.width=AA.width;pc.height=AA.height;}g.clearRect(0,0,pc.width,pc.height);g.drawImage(AA,0,0);if(innerHeight>innerWidth){const cwid=Math.min(innerWidth*1.06,AA.width/dpr);pc.style.height=(cwid*AA.height/AA.width)+'px';pc.style.width=cwid+'px';pc.style.left=Math.round((innerWidth-cwid)/2)+'px';pc.style.top=Math.round(Math.max(54,innerHeight*.068))+'px';pc.style.bottom='auto';}
+ else{pc.style.width='';pc.style.height=Math.min(AA.height/dpr,innerHeight*.9)+'px';pc.style.left=Math.round(innerWidth*.03)+'px';pc.style.bottom=Math.round(innerHeight*.02)+'px';pc.style.top='';}pc.style.filter='none';pc.style.transform='none';
  const F=aresFace(l.e);if(F){fc.width=F.naturalWidth;fc.height=F.naturalHeight;const fg=fc.getContext('2d');fg.clearRect(0,0,fc.width,fc.height);fg.drawImage(F,0,0);fc.style.width=Math.min(F.naturalWidth/dpr,84)+'px';fc.style.display='block';}else fc.style.display='none';}
- else{if(pc.width!=420){pc.width=420;pc.height=520;}pc.style.height='';pc.style.filter='';pc.style.left='';pc.style.transform='';pc.style.bottom='';pc.style.top='';fc.style.display='none';g.drawImage(portrait(dlg.name,l.e),0,0,pc.width,pc.height);}dlg.ch=0;$('dlgText').textContent='';$('dlgBox').style.visibility='visible';dlg.hidden=false;}
+ else{if(pc.width!=420){pc.width=420;pc.height=520;}pc.style.height='';pc.style.width='';pc.style.filter='';pc.style.left='';pc.style.transform='';pc.style.bottom='';pc.style.top='';fc.style.display='none';g.drawImage(portrait(dlg.name,l.e),0,0,pc.width,pc.height);}dlg.ch=0;$('dlgText').textContent='';$('dlgBox').style.visibility='visible';dlg.hidden=false;}
 function dlgNext(){const l=dlg.lines[dlg.i];if(dlg.ch<l.t.length){dlg.ch=l.t.length;$('dlgText').textContent=l.t;return;}dlg.i++;if(dlg.i>=dlg.lines.length)dlgClose();else showLine();}
 function dlgClose(){dlg.on=false;$('dlg').style.display='none';document.body.classList.remove('dlgon');}
 $('dlgNext').onclick=e=>{e.stopPropagation();dlgNext();};$('dlgSkip').onclick=e=>{e.stopPropagation();dlgClose();};$('dlgHide').onclick=e=>{e.stopPropagation();dlg.hidden=true;$('dlgBox').style.visibility='hidden';};

@@ -56,9 +56,9 @@ def split(x0,x1,y0,y1,names,icons=None):
             ys_=np.where(part.any(1))[0]
             if len(ys_):
                 b2=A2.copy(); b2[...,3]=np.where(part,al,0); ic=Image.fromarray(b2); bb=ic.getbbox(); save(icons[nm],ic.crop(bb))
-split(20,412,869,962,['chibi_front','chibi_right','chibi_back','chibi_left'])
-split(428,920,869,962,[f'walk_{i}' for i in range(7)])
-split(936,1521,869,962,['emote_'+e for e in ['idle','smile','blush','angry','surprised','happy','sit']],icons={'emote_smile':'icon_heart','emote_blush':'icon_hearts','emote_angry':'icon_angry','emote_surprised':'icon_surprise','emote_sit':'icon_note'})
+split(20,412,866,979,['chibi_front','chibi_right','chibi_back','chibi_left'])
+split(428,920,866,982,[f'walk_{i}' for i in range(7)])
+split(936,1521,866,979,['emote_'+e for e in ['idle','smile','blush','angry','surprised','happy','sit']],icons={'emote_smile':'icon_heart','emote_blush':'icon_hearts','emote_angry':'icon_angry','emote_surprised':'icon_surprise','emote_sit':'icon_note'})
 json.dump(out,open('slices.json','w'),indent=0); print(len(out),'slices')
 # angry / surprise marks touch neighbouring sprites, so cut them from fixed boxes
 save('icon_angry',key((1229,884,1255,913))); save('icon_surprise',key((1310,880,1328,918)))
