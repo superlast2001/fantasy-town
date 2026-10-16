@@ -16,9 +16,3 @@ Object.assign(OBJ,{
   const col=['#ff6a6a','#38a0ff','#ffb43a'][v%3];c.beginPath();c.moveTo(x-14,y-22);c.quadraticCurveTo(x,y-36,x+14,y-22);c.closePath();c.fillStyle=col;c.fill();c.strokeStyle=OLC;c.stroke();c.beginPath();c.moveTo(x,y-29);c.lineTo(x-5,y-22.5);c.moveTo(x,y-29);c.lineTo(x+5,y-22.5);c.strokeStyle='rgba(255,255,255,.7)';c.stroke();}},
  hedge:{w:1,d:1,h:14,draw(c){box(c,.05,.05,0,.9,.9,9,'#3d9a4a',{top:'#5cbf5a'});}},
 });
-// furniture: gold-only prices + themes tenants can like
-const FTHEME={cozy:'Cozy',nature:'Nature',tech:'Tech',books:'Books',aqua:'Aqua',fun:'Fun'};
-Object.assign(FURN.bed,{cost:{gold:60},theme:'cozy'});Object.assign(FURN.sofa,{cost:{gold:50},theme:'cozy'});Object.assign(FURN.tv,{cost:{gold:70},theme:'tech'});
-Object.assign(FURN.fishtank,{cost:{gold:80},theme:'aqua'});Object.assign(FURN.plant,{cost:{gold:15},theme:'nature'});Object.assign(FURN.rug,{cost:{gold:25},theme:'cozy'});
-Object.assign(FURN.bathtub,{cost:{gold:90},theme:'aqua'});Object.assign(FURN.lamp,{cost:{gold:20},theme:'cozy'});Object.assign(FURN.table,{cost:{gold:20},theme:'nature'});
-Object.assign(FURN.bookshelf,{cost:{gold:35},theme:'books'});Object.assign(FURN.arcade,{cost:{gold:110},theme:'fun'});Object.assign(FURN.fridge,{cost:{gold:45},theme:'tech'});
