@@ -12,15 +12,20 @@ const aresReady=n=>{const i=ARES_IMG[n];return i&&i.complete&&i.naturalWidth>0;}
 ['icon_heart','icon_hearts','icon_angry','icon_surprise','icon_note'].forEach(n=>{const im=new Image();im.src='assets/ares/'+n+'.png';ARES_IMG[n]=im;});
 // Dialogue art: the CG shown at native resolution in a clean frame, keeping its own painted background;
 // only the frame's alpha is feathered (sides) and faded (bottom, behind the text box) so no crop edge shows.
-let _adc=null;
-{const im=new Image();im.src='assets/ares/cg_full.png';ARES_IMG.cg_full=im;}
+let _adc=null,_adcHD=null;
+{const im=new Image();im.src='assets/ares/cg_full.png';ARES_IMG.cg_full=im;const hd=new Image();hd.src='assets/ares/cg_full_hd.png';ARES_IMG.cg_full_hd=hd;}
 // Big model, whole from head to toe (assets/ares/cg_full.png: the sheet's CG with the limbs the panel cut off completed
 // offline), standing over the live, dimmed location. Soft warm rim glow only; no fades, no crop.
-function aresDialogueArt(){if(_adc)return _adc;if(!aresReady('cg_full'))return null;const b=ARES_IMG.cg_full,P=12,W=b.naturalWidth+P*2,H=b.naturalHeight+P*2;
+// Portrait: cg_full_hd.png = Real-ESRGAN anime x4 of cg_full (head verified against the sheet), Lanczos-reduced to 1200px wide,
+// so phones (up to ~1200 device px wide) never upscale it.
+function aresDialogueArtHD(){if(_adcHD)return _adcHD;if(!aresReady('cg_full_hd'))return null;const b=ARES_IMG.cg_full_hd,c=document.createElement('canvas');c.width=b.naturalWidth;c.height=b.naturalHeight;
+ const g=c.getContext('2d');g.save();g.shadowColor='rgba(255,214,190,.45)';g.shadowBlur=18;g.drawImage(b,0,0);g.restore();g.drawImage(b,0,0);return _adcHD=c;}
+function aresDialogueArt(){if(innerHeight>innerWidth){const hd=aresDialogueArtHD();if(hd)return hd;}if(_adc)return _adc;if(!aresReady('cg_full'))return null;const b=ARES_IMG.cg_full,P=12,W=b.naturalWidth+P*2,H=b.naturalHeight+P*2;
  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
  g.save();g.shadowColor='rgba(255,214,190,.5)';g.shadowBlur=9;g.drawImage(b,P,P);g.restore();g.drawImage(b,P,P);return _adc=c;}
 // small face badge = the sheet's close-up for the line's emotion (shown at <= native size, anchored to the text box)
-function aresFace(expr){expr={happy:'smile',laugh:'smile',smirk:'teasing',embarrassed:'blush',blushing:'blush',thinking:'serious'}[expr]||expr;if(!ARES_EXPR.includes(expr))expr='smile';const n='expr_'+(expr=='blush'?'blushing':expr);return aresReady(n)?ARES_IMG[n]:null;}
+function aresFace(expr){expr={happy:'smile',laugh:'smile',smirk:'teasing',embarrassed:'blush',blushing:'blush',thinking:'serious'}[expr]||expr;if(!ARES_EXPR.includes(expr))expr='smile';const n='expr_'+(expr=='blush'?'blushing':expr);return aresReady(n+'_hd')?ARES_IMG[n+'_hd']:aresReady(n)?ARES_IMG[n]:null;}
+['normal','smile','teasing','blushing','angry','serious','surprised','sad'].forEach(e=>{const im=new Image();im.src='assets/ares/expr_'+e+'_hd.png';ARES_IMG['expr_'+e+'_hd']=im;});
 // small uses (applicant card, tenant list): the CG's upper body at native pixels, 420:520 aspect
 const _apc={};
 function aresPortrait(expr){if(_apc.b)return _apc.b;const b=ARES_IMG.cg;const c=document.createElement('canvas');if(!aresReady('cg')){c.width=420;c.height=520;return c;}

@@ -43,3 +43,9 @@ Save: localStorage `fantasytown_save_v8` (older saves reset with +150g).
 ## v0.0.1.9
 - Ares dialogue art is now whole, head to toe (`assets/ares/cg_full.png`). The parts the sheet panel cut off were completed offline with SD1.5-inpainting on CPU: lower legs and feet, guided by the sheet's own front turnaround legs (`extend_cg.py`), then his right upper arm and raised elbow/forearm (`extend_arms.py`). `finish_cg.py` puts the untouched CG pixels back on top, colour-matches the new parts to the CG and crossfades only at the seams (24px at the shins, 16px at the arm cuts).
 - He stands full-body on the left at up to 90% of the screen height (only ever downscaled), over the live dimmed room or town, with the text box beside him.
+
+## v0.0.2.0 — portrait
+- The game now plays upright (portrait); the rotate-to-landscape prompt is gone. Landscape still works.
+- Portrait layout: the room camera fits the whole unit, the town camera is width-based, and the stats pill sits under NOTE/MAP. The condo building fills the screen width. Applicants are shown one card at a time with ‹ › arrows.
+- Portrait dialogue: whole Ares (`cg_full_hd.png`, Real-ESRGAN anime x4 then Lanczos down to 1200px wide, so phones never upscale it) is centred, filling the screen width, over the current location (lightly dimmed). The text box sits at the bottom over his legs, with a face badge (ESRGAN x4 expression card) at its top-right. The back arrow is hidden during dialogue.
+- `assets/ares/head_check.py` verifies that the head equals the sheet pixels (diff 0.000) and that the ESRGAN head keeps its shape (diff 5.10, edge agreement 0.970: ACCEPT).
