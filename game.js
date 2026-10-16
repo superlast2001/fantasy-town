@@ -1,6 +1,6 @@
 'use strict';
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.0.9',SAVE='fantasytown_save_v9';
+const VERSION='v0.0.1.0',SAVE='fantasytown_save_v9';
 const cv=document.getElementById('c'),ctx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -379,7 +379,7 @@ function tenantAtScreen(sx,sy){let best=null,bd=1e9;tenantsHere().forEach(t=>{co
 function drawScene(t,night){const a=area,W=cv.width,H=cv.height;
  const fit=a.room?Math.min(W/((a.cols+a.rows)*TW/2+40),(H-90)/((a.cols+a.rows)*TH/2+66)):0;Z=a.room?Math.max(1.15,Math.min(2.4,fit)):Math.max(1.5,Math.min(3.2,H/(isTouch?220:300)));
  let fx=ptx(),fy=pty();const ft=follow&&TN[follow];if(ft&&!a.room&&!ft.inRoom){fx=ft.px;fy=ft.py;}
- const [px,py]=isoP(fx,fy);let tx2=px,ty2=py-10;if(a.room&&fit>=1.15){const [mx,my]=isoP(a.cols/2,a.rows/2);tx2=mx;ty2=my-26;}
+ const [px,py]=isoP(fx,fy);let tx2=px,ty2=py-10;if(a.room&&fit>=1.15){const [mx,my]=isoP(a.cols/2,a.rows/2);tx2=mx;ty2=my-26;}if(window.ZOOM){Z=window.ZOOM;const [mx,my]=isoP(...window.CAMT);tx2=mx;ty2=my;camSnap=1;}
  if(camSnap){cam.x=tx2;cam.y=ty2;camSnap=0;}else{cam.x+=(tx2-cam.x)*.12;cam.y+=(ty2-cam.y)*.12;}
  const sky=ctx.createLinearGradient(0,0,0,H);if(a.room){sky.addColorStop(0,'#3a2c4a');sky.addColorStop(1,'#6a4a6a');}else{sky.addColorStop(0,night>.5?'#141432':'#9ad8ff');sky.addColorStop(1,night>.5?'#2a1a4a':'#e8f6ff');}
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);

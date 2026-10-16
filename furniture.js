@@ -7,7 +7,7 @@ const ZONES={living:'Living Room',kitchen:'Kitchen',bedroom:'Bedroom',bath:'Bath
 const REQ={toilet:'Toilet',bed:'Bed',stove:'Stove',fridge:'Fridge'};
 const W_=c=>c;const Pz=(x,y,z)=>isoP(x,y,z);
 function legs(c,x,y,w,d,h,col,t=.07){[[x,y],[x+w-t,y],[x,y+d-t],[x+w-t,y+d-t]].forEach(([a,b])=>box(c,a,b,0,t,t,h,col,{hl:false}));}
-function pillow(c,x,y,z,col,r=3.2){const [a,b]=Pz(x,y,z);ell(c,a,b-1.5,r*1.25,r*.8,col,OLC,.6);ell(c,a-1,b-2.4,r*.5,r*.25,'rgba(255,255,255,.55)',null);}
+function pillow(c,x,y,z,col,r=3.2){const [a,b]=Pz(x,y,z);const w=r*2.3,h=r*1.5;c.beginPath();c.roundRect(a-w/2,b-h-1,w,h,1.6);c.fillStyle=col;c.fill();c.lineWidth=.8;c.strokeStyle=OLC;c.stroke();c.fillStyle=shade(col,.85);c.fillRect(a-w/2+1,b-2.2,w-2,1);c.fillStyle='rgba(255,255,255,.7)';c.fillRect(a-w/2+1.5,b-h+.2,w*.45,.9);}
 function cush(c,x,y,z,w,d,h,col){box(c,x,y,z,w,d,h,col);const [a,b]=Pz(x+w/2,y+d/2,z+h);ell(c,a,b,w*6,d*2.6,'rgba(255,255,255,.18)',null);}
 function bookRow(c,x0,y0,z0,w,d,u0,u1,z,hgt=5,face='L'){const cols=['#e85a6a','#5a8aff','#ffd84a','#3dbf6a','#9a6aff','#ff9a3a','#f4f4f4'];let i=0;for(let u=u0;u<u1-.05;u+=.07+((i*7)%3)*.015){faceQ(c,x0,y0,z0,w,d,face,u,u+.06,z,z+hgt-((i*5)%3),cols[(i*3)%7],'rgba(0,0,0,.35)');i++;}}
 function plantTop(c,x,y,z,s=1,col='#3faa4a'){const [a,b]=Pz(x,y,z);[[-4,-5,.3],[4,-7,-.3],[0,-11,0],[-3,-9,.5],[3,-3,-.6],[-5,-2,.8]].forEach(([dx,dy,r])=>{c.beginPath();c.ellipse(a+dx*s,b+dy*s,2.6*s,5*s,r,0,7);c.fillStyle=shade(col,1+dx*.02);c.fill();c.strokeStyle=OLC;c.lineWidth=.6;c.stroke();c.beginPath();c.moveTo(a,b);c.lineTo(a+dx*s*.8,b+dy*s*.8);c.strokeStyle=shade(col,.7);c.stroke();});}

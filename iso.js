@@ -1,13 +1,25 @@
 'use strict';
 // Isometric renderer helpers: 2:1 diamonds, outlined shaded boxes, cached sprites
-const TW=32,TH=16,RS=2,OLC='#2a2238';
+const TW=32,TH=16,RS=3,OLC='#2a2238';
 const isoP=(x,y,z=0)=>[(x-y)*TW/2,(x+y)*TH/2-z];
 function poly(c,pts,fill,ol=OLC,lw=1){c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();if(fill){c.fillStyle=fill;c.fill();}if(ol){c.lineWidth=lw;c.strokeStyle=ol;c.stroke();}}
-// box in local tile coords at origin (x0,y0,z0) size w,d,h(px)
+// rounded polygon path (arcTo corners)
+function rpath(c,pts,r){const n=pts.length;c.beginPath();const m=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2];const s0=m(pts[n-1],pts[0]);c.moveTo(s0[0],s0[1]);for(let i=0;i<n;i++){const p=pts[i],q=pts[(i+1)%n];const rr=Array.isArray(r)?r[i]:r;c.arcTo(p[0],p[1],q[0],q[1],rr);}c.closePath();}
+// SOFT box: rounded silhouette, 3-tone cel shading with gentle gradients, rim highlight, single dark outline
 function box(c,x0,y0,z0,w,d,h,col,o={}){const P=(x,y,z)=>isoP(x0+x,y0+y,z0+z);
- const top=o.top||shade(col,1.12),L=o.left||shade(col,.86),R=o.right||shade(col,.7),ol=o.ol===undefined?OLC:o.ol;
- poly(c,[P(0,d,0),P(w,d,0),P(w,d,h),P(0,d,h)],L,ol);poly(c,[P(w,0,0),P(w,d,0),P(w,d,h),P(w,0,h)],R,ol);poly(c,[P(0,0,h),P(w,0,h),P(w,d,h),P(0,d,h)],top,ol);
- if(o.hl!==false){c.beginPath();const a=P(0,d,h),b=P(w,d,h),e=P(w,0,h);c.moveTo(a[0],a[1]+.5);c.lineTo(b[0],b[1]+.5);c.lineTo(e[0],e[1]+.5);c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=.8;c.stroke();}}
+ const top=o.top||shade(col,1.12),L=o.left||shade(col,.88),R=o.right||shade(col,.72),ol=o.ol===undefined?OLC:o.ol;
+ const sw=Math.min(w,d)*14,r=o.r!=null?o.r:Math.max(0,Math.min(1.5,sw*.2,h*.25));
+ const T0=P(0,0,h),T1=P(w,0,h),T2=P(w,d,h),T3=P(0,d,h),B1=P(w,0,0),B2=P(w,d,0),B3=P(0,d,0);
+ if(r<.35||h<.6){poly(c,[B3,B2,T2,T3],L,ol);poly(c,[B1,B2,T2,T1],R,ol);poly(c,[T0,T1,T2,T3],top,ol);return;}
+ const sil=[T0,T1,B1,B2,B3,T3];c.save();rpath(c,sil,[r*.8,r,r*.9,r*.9,r*.9,r]);c.save();c.clip();
+ const gl=c.createLinearGradient(0,T3[1],0,B3[1]);const sol=typeof L=='string'&&L[0]=='#';if(sol){gl.addColorStop(0,shade(L,1.06));gl.addColorStop(1,shade(L,.9));}c.fillStyle=L;c.fillRect(B3[0]-60,T0[1]-60,(B1[0]-B3[0])+120,(B2[1]-T0[1])+120);
+ c.beginPath();c.moveTo(T2[0],T2[1]-1);c.lineTo(T1[0],T1[1]-1);c.lineTo(B1[0]+40,B1[1]);c.lineTo(B2[0],B2[1]+40);c.closePath();const gr=c.createLinearGradient(T2[0],0,B1[0],0);const sor=typeof R=='string'&&R[0]=='#';if(sor){gr.addColorStop(0,shade(R,1.08));gr.addColorStop(1,shade(R,.88));}c.fillStyle=R;c.fill();
+ rpath(c,[T0,T1,T2,T3],r*.9);const gt=c.createLinearGradient(T0[0],T0[1],T2[0],T2[1]);const sot=typeof top=='string'&&top[0]=='#';if(sot){gt.addColorStop(0,shade(top,1.08));gt.addColorStop(1,shade(top,.97));}c.fillStyle=top;c.fill();
+ if(o.hl!==false){c.beginPath();c.moveTo(T3[0]+r,T3[1]+r*.5);c.lineTo(T2[0]-r*.6,T2[1]);c.lineTo(T1[0]-r,T1[1]-r*.5+.6);c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=.8;c.stroke();
+  c.beginPath();c.moveTo(T2[0],T2[1]+r);c.lineTo(B2[0],B2[1]-r);c.strokeStyle='rgba(0,0,0,.12)';c.lineWidth=.9;c.stroke();
+}
+ c.restore();if(ol){rpath(c,sil,[r*.8,r,r*.9,r*.9,r*.9,r]);c.lineWidth=1.15;c.strokeStyle=ol;c.lineJoin='round';c.stroke();}c.restore();}
+function boxHard(c,x0,y0,z0,w,d,h,col,o={}){box(c,x0,y0,z0,w,d,h,col,{...o,r:0});}
 // rect on a box face: face 'L' (+y side, u along x) or 'R' (+x side, u along y). u,v in px-ish tile fractions; z in px
 function faceQ(c,x0,y0,z0,w,d,face,u0,u1,z1,z2,fill,ol=OLC){const P=face=='L'?(u,z)=>isoP(x0+u,y0+d,z0+z):(u,z)=>isoP(x0+w,y0+u,z0+z);poly(c,[P(u0,z1),P(u1,z1),P(u1,z2),P(u0,z2)],fill,ol,.8);}
 function roof(c,x0,y0,z0,w,d,rh,col){const P=(x,y,z)=>isoP(x0+x,y0+y,z0+z),ov=.15;

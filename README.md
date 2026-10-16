@@ -1,4 +1,4 @@
-# Fantasy Town v0.0.0.9
+# Fantasy Town v0.0.1.0
 Family-friendly isometric condo-manager life sim set in the small town of Lumen Town. Plain HTML5 canvas, no build step: open index.html.
 
 ## Town
@@ -12,7 +12,7 @@ Fantasy Condo, City Park (pond, benches), Town Plaza (fountain, Mayor Lumen), Ca
 - Schedules: home in the morning, work (Studio/Cafe/Restaurant/Furniture Shop) or hangouts (park/plaza/cafe) by day, lunch at cafe/restaurant, evening hangout, home at 8 PM. They walk the streets between places.
 - Tap a tenant → card with FOLLOW (camera tracks them), TALK, HANG OUT. Talking (+1/day) and hanging out (+3/day) raise friendship; each level unlocks one of 3 friendship scenes per tenant.
 
-## Apartments (v0.0.0.9)
+## Apartments (v0.0.1.0)
 - Each tenant unit is an 18×12 apartment split by interior walls/doorways into Kitchen, Bedroom, Bathroom and Living Room (bright Habbo-style walls, white tile / wood floors).
 - A unit can only be rented with a Toilet, Bed, Stove and Fridge. Furniture must go in the right room (toilet in bathroom, stove in kitchen...). Wall decor goes on tiles touching the back walls.
 - 60+ furniture items in 5 themes (Modern, Cozy Wood, Neon Gamer, Beach, Luxury) plus gym/safety props; tenants like 2 themes and one favourite item. Completing each room's kit (e.g. kitchen: stove, fridge, sink, counter, dining) adds happiness.
