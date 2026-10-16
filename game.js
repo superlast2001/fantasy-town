@@ -223,6 +223,62 @@ addEventListener('keydown',ev=>{const k=ev.key.toLowerCase();
  if(k=='escape')back();if(k=='tab')ev.preventDefault();if(k=='m'&&!area.room)showMap=true;if(k.startsWith('arrow'))ev.preventDefault();});
 addEventListener('keyup',ev=>{keys[ev.key.toLowerCase()]=0;});
 const isTouch=('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches||Q.has('touch');if(isTouch)document.body.classList.add('touch');
+
+// ---------- virtual joystick (8-dir isometric) ----------
+let joyActive=false,joyDx=0,joyDy=0;
+const joyEl=document.getElementById('joy'),joyStick=document.getElementById('joyStick');
+function updateJoyVisibility(){
+  const hide=dlg.on||menuOpen()||showMap||showCondo||showApps||decor;
+  document.body.classList.toggle('hide-joy',hide);
+  document.body.classList.toggle('dlg-on',!!dlg.on);
+  document.body.classList.toggle('menu-on',menuOpen());
+}
+function joyToDirs(dx,dy){
+  const len=Math.hypot(dx,dy);
+  if(len<18)return [0,0]; // deadzone
+  const ang=Math.atan2(dy,dx); // 0 right, PI/2 down
+  const sector=Math.round(ang/(Math.PI/4)) & 7; // 8 dirs
+  // map to sx (right+), sy (down+)
+  const dirs=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  return dirs[sector];
+}
+if(joyEl){
+  joyEl.addEventListener('pointerdown',ev=>{
+    ev.preventDefault();ev.stopPropagation();
+    joyActive=true;
+    const r=joyEl.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const mx=ev.clientX-cx,my=ev.clientY-cy;
+    const max=40;
+    const l=Math.hypot(mx,my)||1;
+    const sc=Math.min(1,max/l);
+    joyDx=mx*sc;joyDy=my*sc;
+    joyStick.style.left=(32+joyDx)+'px';joyStick.style.top=(32+joyDy)+'px';
+    joyEl.setPointerCapture(ev.pointerId);
+  });
+  joyEl.addEventListener('pointermove',ev=>{
+    if(!joyActive)return;
+    ev.preventDefault();
+    const r=joyEl.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const mx=ev.clientX-cx,my=ev.clientY-cy;
+    const max=40;
+    const l=Math.hypot(mx,my)||1;
+    const sc=Math.min(1,max/l);
+    joyDx=mx*sc;joyDy=my*sc;
+    joyStick.style.left=(32+joyDx)+'px';joyStick.style.top=(32+joyDy)+'px';
+  });
+  const endJoy=ev=>{
+    if(!joyActive)return;
+    joyActive=false;joyDx=joyDy=0;
+    joyStick.style.left='32px';joyStick.style.top='32px';
+    if(ev&&ev.pointerId)try{joyEl.releasePointerCapture(ev.pointerId);}catch(e){}
+  };
+  joyEl.addEventListener('pointerup',endJoy);
+  joyEl.addEventListener('pointercancel',endJoy);
+  joyEl.addEventListener('pointerleave',endJoy);
+}
+
 let triedFS=false;function tryFS(){if(triedFS||!isTouch)return;triedFS=true;const el=document.documentElement;try{const p=el.requestFullscreen?el.requestFullscreen({navigationUI:'hide'}):el.webkitRequestFullscreen&&el.webkitRequestFullscreen();Promise.resolve(p).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{});}catch(e){}}
 addEventListener('pointerdown',tryFS,{capture:true});
 document.querySelectorAll('.tb').forEach(btn=>{const k=btn.dataset.k;const on=ev=>{ev.preventDefault();ev.stopPropagation();
@@ -450,7 +506,8 @@ function nightF(){const h=(S.min/60)%24;if(h>=6&&h<17)return 0;if(h>=17&&h<20)re
 function update(dt){if(dlg.on){const l=dlg.lines[dlg.i];if(dlg.ch<l.t.length){dlg.ch=Math.min(l.t.length,dlg.ch+dt*45);$('dlgText').textContent=l.t.slice(0,Math.floor(dlg.ch));}return;}
  if(menuOpen()||showMap||showCondo||showApps)return;
  S.min+=dt*4;if(S.min>=26*60){sleep(true);return;}syncTenants(false);stepTenants(dt);
- const sx=(keys.d||keys.arrowright||keys.t_right?1:0)-(keys.a||keys.arrowleft||keys.t_left?1:0),sy=(keys.s||keys.arrowdown||keys.t_down?1:0)-(keys.w||keys.arrowup||keys.t_up?1:0);
+ const jsxsy=joyActive?joyToDirs(joyDx,joyDy):[0,0];
+ const sx=((keys.d||keys.arrowright||keys.t_right?1:0)-(keys.a||keys.arrowleft||keys.t_left?1:0))||jsxsy[0],sy=((keys.s||keys.arrowdown||keys.t_down?1:0)-(keys.w||keys.arrowup||keys.t_up?1:0))||jsxsy[1];
  let vx=sx+sy,vy=sy-sx;if(vx||vy){path=null;pendingAct=null;pendingTalk=null;}
  else if(path&&path.length){const [nx,ny]=path[0];vx=nx+.5-ptx();vy=ny+.5-pty();if(Math.hypot(vx,vy)<.1){S.px=(nx+.5)*16;S.py=(ny+.5)*16;path.shift();vx=vy=0;if(!path.length){path=null;if(area.room&&Math.floor(ptx())==area.exit[0]&&Math.floor(pty())==area.exit[1]){back();return;}if(pendingAct){const [ax,ay]=pendingAct;pendingAct=null;faceTo(ax,ay);act(ax,ay);}}}}
  if(pendingTalk&&!path){const t=TN[pendingTalk.n];const w=pendingTalk.what;pendingTalk=null;if(t)approach(t,w);}
@@ -555,7 +612,7 @@ let lastCard='';function updateButtons(){const modal=showMap||showCondo||showApp
  $('tcName').textContent=t.n;$('tcInfo').innerHTML=`${hearts(t.n)} ${REL[frLv(t.n)]} · scenes ${f.scene}/3<br>${loc} · ☺ ${happiness(t.n)}%`;
  $('tFollow').textContent=follow==t.n?'STOP':'FOLLOW';$('tHang').classList.toggle('dim',f.hang==S.day);}
 let last=performance.now(),T0=0;
-function frame(now){ctx=mainCtx;const dt=Math.min(.05,(now-last)/1000);last=now;T0+=dt;update(dt);const night=nightF();
+function frame(now){ctx=mainCtx;const dt=Math.min(.05,(now-last)/1000);last=now;T0+=dt;updateJoyVisibility();update(dt);const night=nightF();
  if(showApps)drawApps(T0);else if(showMap)drawMap(T0);else if(showCondo)drawCondo(T0);else{drawScene(T0,night);if(!window.CLEAN)drawHUD(T0);}
  updateTop();updateButtons();requestAnimationFrame(frame);}
 syncTenants(true);
