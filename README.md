@@ -34,3 +34,7 @@ Save: localStorage `fantasytown_save_v8` (older saves reset with +150g).
 - Ares art now uses the user's own reference sheet, sliced by `assets/ares/slice.py` (crop + background key only) into 39 PNGs: CG, turnaround, expressions, poses, chibi directions, walk frames, emotes. The contact sheet is `screenshot-ares-slices.png`.
 - Dialogue portrait: CG or the pose matching the emotion, plus an expression close-up inset. The in-world sprite uses the chibi directions, walk frames and emote sprites.
 - The Night Club sign was raised onto the roof and his club spots moved beside the door. The old drawn Ares art, the duplicate emote function and ares-sheet.html were removed.
+
+## v0.0.1.8
+- Ares dialogue: the CG is shown at native resolution (never upscaled, sized for devicePixelRatio), keeps its painted background, and sits in a red frame with an 8px side feather and a bottom fade behind the text box. The expression close-up is a badge anchored to the text box.
+- In-world: emote icons are cut from the sheet and drawn at native size beside his head, following him. Edge alpha is decontaminated against the panel colour, and there is a soft radial ground shadow.

@@ -1,7 +1,7 @@
 'use strict';
 const DPR=Math.min(2,window.devicePixelRatio||1);let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.1.7',SAVE='fantasytown_save_v10';
+const VERSION='v0.0.1.8',SAVE='fantasytown_save_v10';
 const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -42,7 +42,7 @@ const CHARS={
  'Mayor Lumen':{look:{body:'#c09a2a',hair:'#f4f4f4',style:'short'},
   talks:[[L('Welcome to Lumen Town, manager! Small, but full of heart.','happy'),L('Happy tenants make a happy town. Post an ad at your front desk!')],[L('Tenants love rooms with their favourite things.','smile'),L('Check what they like before you decorate!','happy')]]},
 };
-// ===== v0.0.1.7 ARES — first custom tenant (original writing; cheeky, warm, family-friendly) =====
+// ===== v0.0.1.8 ARES — first custom tenant (original writing; cheeky, warm, family-friendly) =====
 CHARS.Ares={look:{ares:1,body:'#d9a07a',hair:'#14101a'},pers:'Confident · Loud · Big-brother',likes:['neon','modern'],fav:'dumbbells',loves:['dumbbells','weightbench','gymball','poster_gym'],job:'club',night:1,hang:['gym','plaza','park'],
  wage:13.5,shiftH:6,nights:5,offer:[25,28],
  talks:[[L('Yo! You run this place? Name\'s Ares. Night-club security. Don\'t worry, I only LOOK scary.','smile'),L('Door\'s my job, boss. Nobody gets past me without a smile.','teasing')]],
@@ -351,7 +351,9 @@ function drawApps(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height;
 // ---------- dialogue ----------
 const dlg={on:false,lines:[],i:0,ch:0,name:'',hidden:false};
 function startDialogue(name,lines){Object.assign(dlg,{on:true,lines,i:0,ch:0,name,hidden:false});$('dlg').style.display='block';$('dlgName').textContent=name.toUpperCase();showLine();for(const k in keys)keys[k]=0;}
-function showLine(){const l=dlg.lines[dlg.i];const pc=$('dlgPortrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);g.drawImage(portrait(dlg.name,l.e),0,0,pc.width,pc.height);dlg.ch=0;$('dlgText').textContent='';$('dlgBox').style.visibility='visible';dlg.hidden=false;}
+function showLine(){const l=dlg.lines[dlg.i];const pc=$('dlgPortrait'),g=pc.getContext('2d');g.clearRect(0,0,pc.width,pc.height);const AA=dlg.name=='Ares'&&typeof aresDialogueArt=='function'&&aresDialogueArt(),fc=$('dlgFace');if(AA){const dpr=window.devicePixelRatio||1;if(pc.width!=AA.width){pc.width=AA.width;pc.height=AA.height;}g.clearRect(0,0,pc.width,pc.height);g.drawImage(AA,0,0);pc.style.height=Math.min(innerHeight*.84,AA.height/dpr)+'px';pc.style.filter='none';
+ const F=aresFace(l.e);if(F){fc.width=F.naturalWidth;fc.height=F.naturalHeight;const fg=fc.getContext('2d');fg.clearRect(0,0,fc.width,fc.height);fg.drawImage(F,0,0);fc.style.width=Math.min(F.naturalWidth/dpr,84)+'px';fc.style.display='block';}else fc.style.display='none';}
+ else{if(pc.width!=420){pc.width=420;pc.height=520;}pc.style.height='';pc.style.filter='';fc.style.display='none';g.drawImage(portrait(dlg.name,l.e),0,0,pc.width,pc.height);}dlg.ch=0;$('dlgText').textContent='';$('dlgBox').style.visibility='visible';dlg.hidden=false;}
 function dlgNext(){const l=dlg.lines[dlg.i];if(dlg.ch<l.t.length){dlg.ch=l.t.length;$('dlgText').textContent=l.t;return;}dlg.i++;if(dlg.i>=dlg.lines.length)dlgClose();else showLine();}
 function dlgClose(){dlg.on=false;$('dlg').style.display='none';}
 $('dlgNext').onclick=e=>{e.stopPropagation();dlgNext();};$('dlgSkip').onclick=e=>{e.stopPropagation();dlgClose();};$('dlgHide').onclick=e=>{e.stopPropagation();dlg.hidden=true;$('dlgBox').style.visibility='hidden';};

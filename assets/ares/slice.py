@@ -20,6 +20,8 @@ def key(box,T=40,lo=12,shadow=False):
     lab2,n=nd.label(al>0); sz=nd.sum(np.ones_like(al),lab2,range(1,n+1))
     for i,s in enumerate(sz):
         if s<60: al[lab2==i+1]=0
+    bgc=np.median(a[bg][:,:3],axis=0) if bg.any() else np.zeros(3)
+    pm=(al>0)&(al<1); af=al[pm][:,None]; a[...,:3][pm]=np.clip((a[...,:3][pm].astype(float)-(1-af)*bgc)/np.maximum(af,.15),0,255).astype(np.uint8)
     a[...,3]=(al*255).astype(np.uint8); ys,xs=np.where(al>0)
     return Image.fromarray(a).crop((xs.min(),ys.min(),xs.max()+1,ys.max()+1))
 out={}
@@ -32,7 +34,7 @@ for i,e in enumerate(E):
     x0,x1=C[i%4];y0,y1=[(40,175),(213,348)][i//4]; save('expr_'+e,SH.crop((x0,y0,x1,y1)))  # close-ups: rectangular face cards
 P=['talking','laugh','teasing','embarrassed','angry','thinking','surprised','serious'];PC=[(343,487),(500,635),(647,783),(795,926),(936,1063),(1076,1196),(1208,1365),(1377,1521)]
 for p,(x0,x1) in zip(P,PC): save('pose_'+p,key((x0+4,514,x1-4,780),shadow=True))
-def split(x0,x1,y0,y1,names):
+def split(x0,x1,y0,y1,names,icons=None):
     img=key((x0,y0,x1,y1)); al=np.asarray(img)[...,3]; lab,n=nd.label(al>0,structure=np.ones((3,3)))
     objs=nd.find_objects(lab); sz=nd.sum(al>0,lab,range(1,n+1)); big=[k for k in range(n) if sz[k]>0.25*sz.max()]
     big.sort(key=lambda k:objs[k][1].start); print(names[0][:5],len(big),'big parts')
@@ -48,7 +50,16 @@ def split(x0,x1,y0,y1,names):
     A2=np.asarray(img)
     for bi,nm in enumerate(names[:len(big)]):
         a=A2.copy(); a[...,3]=np.where(owner[lab]==bi,al,0); a[lab==0,3]=0; im=Image.fromarray(a); save(nm,im.crop(im.getbbox()))
+        if icons and nm in icons:
+            body=big[bi]; part=(owner[lab]==bi)&(lab!=body+1)&(lab>0)
+            # keep only parts above the shoulders / beside the head (the emote mark), skip stray specks
+            ys_=np.where(part.any(1))[0]
+            if len(ys_):
+                b2=A2.copy(); b2[...,3]=np.where(part,al,0); ic=Image.fromarray(b2); bb=ic.getbbox(); save(icons[nm],ic.crop(bb))
 split(20,412,869,962,['chibi_front','chibi_right','chibi_back','chibi_left'])
 split(428,920,869,962,[f'walk_{i}' for i in range(7)])
-split(936,1521,869,962,['emote_'+e for e in ['idle','smile','blush','angry','surprised','happy','sit']])
+split(936,1521,869,962,['emote_'+e for e in ['idle','smile','blush','angry','surprised','happy','sit']],icons={'emote_smile':'icon_heart','emote_blush':'icon_hearts','emote_angry':'icon_angry','emote_surprised':'icon_surprise','emote_sit':'icon_note'})
 json.dump(out,open('slices.json','w'),indent=0); print(len(out),'slices')
+# angry / surprise marks touch neighbouring sprites, so cut them from fixed boxes
+save('icon_angry',key((1229,884,1255,913))); save('icon_surprise',key((1310,880,1328,918)))
+json.dump(out,open('slices.json','w'),indent=0)

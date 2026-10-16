@@ -135,9 +135,17 @@
 73,
 87
 ],
+"icon_heart": [
+16,
+18
+],
 "emote_blush": [
 75,
 87
+],
+"icon_hearts": [
+14,
+15
 ],
 "emote_angry": [
 78,
@@ -154,5 +162,17 @@
 "emote_sit": [
 118,
 93
+],
+"icon_note": [
+20,
+22
+],
+"icon_angry": [
+24,
+28
+],
+"icon_surprise": [
+17,
+34
 ]
 }

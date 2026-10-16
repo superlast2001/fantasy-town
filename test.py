@@ -139,6 +139,6 @@ async def main():
     await ar.evaluate("FT.act(31,15)");await ar.wait_for_timeout(200);print('gym menu',await ar.evaluate("document.getElementById('menu').innerText.slice(0,60)"));await ar.evaluate("closeMenu()")
     print('HUD',await ar.evaluate("document.getElementById('gold').textContent+' | '+document.getElementById('res').innerText"))
     print('ares imgs',await ar.evaluate("Object.values(ARES_IMG).filter(i=>!(i.complete&&i.naturalWidth)).length"),'missing of',await ar.evaluate("ARES_SLICES.length"))
-    await ar.evaluate("FT.setTime(18);FT.goArea('town',[23,22]);FT.TN.Ares.inRoom=false;FT.TN.Ares.px=24.5;FT.TN.Ares.py=21.5");await ar.wait_for_timeout(500);await ar.screenshot(path='screenshot-ares-ingame.png')
+    await ar.evaluate("FT.setTime(18);FT.goArea('town',[23,22]);FT.TN.Ares.inRoom=false;FT.TN.Ares.px=24.5;FT.TN.Ares.py=21.5;aresEmote('heart',60)");await ar.wait_for_timeout(500);await ar.screenshot(path='screenshot-ares-ingame.png');print('portrait css',await ar.evaluate("(()=>{const p=document.getElementById('dlgPortrait');return p.width+'x'+p.height+' css '+p.style.height})()"))
     print('ERRORS',errs);await b.close()
 asyncio.run(main())
