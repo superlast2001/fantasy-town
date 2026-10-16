@@ -1,7 +1,7 @@
 'use strict';
 const DPR=Math.min(2,window.devicePixelRatio||1);let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.1.5',SAVE='fantasytown_save_v10';
+const VERSION='v0.0.1.6',SAVE='fantasytown_save_v10';
 const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -42,12 +42,29 @@ const CHARS={
  'Mayor Lumen':{look:{body:'#c09a2a',hair:'#f4f4f4',style:'short'},
   talks:[[L('Welcome to Lumen Town, manager! Small, but full of heart.','happy'),L('Happy tenants make a happy town. Post an ad at your front desk!')],[L('Tenants love rooms with their favourite things.','smile'),L('Check what they like before you decorate!','happy')]]},
 };
-const TENANT_POOL=['Pip','Nova','Sigil','Amber','Juno','Kai','Mira','Vexa','Bolt','Old Coral'],MAXF=6,FLOORCOL=[FL1,FL2,FL3];
+// ===== v0.0.1.6 ARES — first custom tenant (original writing; cheeky, warm, family-friendly) =====
+CHARS.Ares={look:{ares:1,body:'#d9a07a',hair:'#14101a'},pers:'Confident · Loud · Big-brother',likes:['neon','modern'],fav:'dumbbells',loves:['dumbbells','weightbench','gymball','poster_gym'],job:'club',night:1,hang:['gym','plaza','park'],
+ wage:13.5,shiftH:6,nights:5,offer:[25,28],
+ talks:[[L('Yo! You run this place? Name\'s Ares. Night-club security. Don\'t worry, I only LOOK scary.','smile'),L('Door\'s my job, boss. Nobody gets past me without a smile.','teasing')]],
+ greet:[[L('Boss! Looking sharp. Well... sharp-ish.','teasing'),L('Kidding! You\'re alright, buddy.','smile')],
+  [L('Did you skip leg day, boss? Ha! Relax, I\'m only teasing.','teasing'),L('Checked the front door locks on my way in. All tight.','serious')],
+  [L('Race you to the elevator! ...You pressed the button first? Rematch tomorrow.','surprised'),L('Okay, okay, you win this round, buddy.','smile')],
+  [L('Anyone giving you trouble, boss? Point \'em out.','serious'),L('I\'ll ask them REAL nicely to stop. With my best smile.','teasing')],
+  [L('You know you\'re basically my little sibling now? Annoying, but the good kind.','smile'),L('...Don\'t tell anyone I said that.','blush')],
+  [L('Best landlord in Lumen Town. I\'d shout it from the roof, but I\'m loud enough already!','smile'),L('Seriously, buddy. Thanks for having my back.','blush')]],
+ scenes:[[L('Alright buddy, spot me on this bench. ...You\'re holding the bar like a baguette!','teasing'),L('There. Ten reps! I\'d flex, but I don\'t wanna blind you.','smile')],
+  [L('Last week a little kid lost their mum outside the club. I bought them a hot chocolate till she turned up.','serious'),L('The tough-guy face? That\'s just for the door. The real job is keeping people safe.','smile')],
+  [L('My big brother used to walk me home every night. Now I walk the whole street home.','serious'),L('And you\'re on my list too, boss. Nobody messes with my people. Got it?','smile')]],
+ home:{good:[L('Boss! Welcome to Fort Ares. Mind the dumbbells — they bite.','smile')],ok:[L('Oh hey, buddy. Place is alright. Could use a weight bench... just saying.','teasing')],bad:[L('Uh, boss? I\'ve napped in comfier bus shelters. No offence.','sad')]},
+ furn:{fav:'THE DUMBBELL RACK?! Boss, I could cry. I won\'t. But I could.',love:'Now we\'re talking! Gains in the living room!',like:'Nice pick, buddy. Very me.',meh:'Hmm. Very... cosy. I\'ll learn to love it.'},
+ rent:{good:'Rent\'s in, boss. Place is solid — worth every quid.',bad:'Paying all that for THIS? Get me a weight bench and we\'re square, buddy.'}};
+const TENANT_POOL=['Ares','Pip','Nova','Sigil','Amber','Juno','Kai','Mira','Vexa','Bolt','Old Coral'],MAXF=6,FLOORCOL=[FL1,FL2,FL3];
 // ---------- town ----------
 const CONDO={x:2,y:2,w:5,d:4,door:[4,6]};
-const BLDS=[{id:'condo',x:2,y:2,w:5,d:4,door:[4,6]},{id:'cafe',x:9,y:3,w:4,d:3,door:[11,6]},{id:'restaurant',x:21,y:3,w:5,d:3,door:[23,6]},{id:'fshop',x:28,y:3,w:5,d:3,door:[30,6]},{id:'studio',x:25,y:14,w:4,d:3,door:[27,17]}];
+const BLDS=[{id:'club',x:21,y:20,w:5,d:3,door:[23,23]},{id:'gym',x:30,y:14,w:4,d:3,door:[32,17]},{id:'condo',x:2,y:2,w:5,d:4,door:[4,6]},{id:'cafe',x:9,y:3,w:4,d:3,door:[11,6]},{id:'restaurant',x:21,y:3,w:5,d:3,door:[23,6]},{id:'fshop',x:28,y:3,w:5,d:3,door:[30,6]},{id:'studio',x:25,y:14,w:4,d:3,door:[27,17]}];
 const PLACES={home:{n:'Home'},park:{n:'City Park',tag:[7,17],spots:[[6,15],[9,16],[8,21],[11,19],[3,15],[10,14]]},plaza:{n:'Town Plaza',tag:[17.5,15],spots:[[15,14],[20,14],[15,18],[20,17],[14,16]]},
- cafe:{n:'Cafe',tag:[11,4.5],spots:[[10,7],[12,7],[9,8],[13,8]]},restaurant:{n:'Restaurant',tag:[23.5,4.5],spots:[[22,7],[24,7],[25,8],[21,8]]},fshop:{n:'Furniture Shop',tag:[30.5,4.5],spots:[[29,7],[31,7],[32,8]]},studio:{n:'Studio',tag:[27,15.5],spots:[[26,18],[28,18],[25,19]]}};
+ cafe:{n:'Cafe',tag:[11,4.5],spots:[[10,7],[12,7],[9,8],[13,8]]},restaurant:{n:'Restaurant',tag:[23.5,4.5],spots:[[22,7],[24,7],[25,8],[21,8]]},fshop:{n:'Furniture Shop',tag:[30.5,4.5],spots:[[29,7],[31,7],[32,8]]},club:{n:'Night Club',tag:[23.5,21.5],spots:[[22,23],[24,23],[21,23]]},gym:{n:'Gym',tag:[32,15.5],spots:[[31,18],[33,18],[30,18]]},
+ studio:{n:'Studio',tag:[27,15.5],spots:[[26,18],[28,18],[25,19]]}};
 // v0.0.1.3 default layouts for the bigger rooms. Seating faces what it is for (r: 0 faces +y, 1 +x, 2 -y/back to camera, 3 -x)
 // v0.0.1.4 GROUND FLOOR: round marble lobby + curved reception, lounge, elevator/stairs, closed manager office, private staff room
 const OFFICE_DEFAULT=[{k:'frontdesk',x:10,y:6},{k:'fountain_lobby',x:11,y:12},{k:'chandelier',x:11,y:12},{k:'pendant',x:10,y:7},{k:'pendant',x:13,y:7},{k:'doormat',x:11,y:18},
@@ -80,13 +97,14 @@ function genTown(a){layout(a);
  AF(a,1,6,34,1,PATH);[[4,7],[11,7],[23,7],[30,7]].forEach(([x,y])=>AF(a,x,y,1,2,PATH));AF(a,8,7,6,2,CONC);AF(a,20,7,7,2,CONC);
  AF(a,14,13,8,6,CONC);AF(a,20,18,9,1,PATH);AF(a,27,17,1,1,PATH);AF(a,24,18,6,2,CONC);
  AF(a,1,13,13,10,DARKG);AF(a,2,14,11,8,G);AF(a,4,17,3,3,WATER);AS(a,4,17,3,3);AF(a,7,13,1,10,PATH);AF(a,2,18,11,1,PATH);
- for(const b of BLDS)if(b.id!='condo')OB(a,b.id,b.x,b.y);a.objs.push({k:'condo',x:CONDO.x,y:CONDO.y,w:5,d:4});AS(a,CONDO.x,CONDO.y,5,4);
+ for(const b of BLDS)if(b.id!='condo'&&b.id!='club'&&b.id!='gym')OB(a,b.id,b.x,b.y);a.objs.push({k:'condo',x:CONDO.x,y:CONDO.y,w:5,d:4});AS(a,CONDO.x,CONDO.y,5,4);
  OB(a,'fountain',16,15);[[9,7,0],[12,8,1],[21,7,2],[25,7,0]].forEach(([x,y,v])=>OB(a,'parasol',x,y,v));
  [[3,14],[9,14],[11,16],[3,21],[11,21],[5,21],[12,14]].forEach(([x,y],i)=>OB(a,'tree',x,y,i));[[1,16],[1,20],[13,15],[13,20]].forEach(([x,y],i)=>OB(a,'tree',x,y,i+2));
  [[8,15],[8,19]].forEach(([x,y])=>OB(a,'bench',x,y));OB(a,'bench',14,17);OB(a,'bench',20,15);
  [[5,13],[6,13],[9,13],[10,13],[2,13],[3,13],[11,13],[12,13]].forEach(([x,y])=>OB(a,'hedge',x,y));
  [[2,15],[10,20],[12,18],[5,15],[3,19]].forEach(([x,y],i)=>OB(a,'flowers',x,y,i,false));[[8,2],[13,4],[20,2],[27,2],[33,3],[34,14],[31,19],[22,21],[30,21],[34,21],[24,13],[14,21],[19,22]].forEach(([x,y],i)=>OB(a,'tree',x,y,i));
  [[0,8],[6,8],[14,8],[21,13],[26,8],[33,8],[15,13],[22,13],[30,13],[15,21],[20,21]].forEach(([x,y])=>OB(a,'lamp',x,y));
+ AF(a,20,23,9,1,CONC);AF(a,29,17,6,2,PATH);for(const b of BLDS.filter(q=>q.id=='club'||q.id=='gym')){a.objs=a.objs.filter(o=>!(o.x>=b.x-1&&o.x<b.x+b.w&&o.y>=b.y-1&&o.y<=b.y+b.d));AS(a,b.x-1,b.y-1,b.w+1,b.d+2,0);OB(a,b.id,b.x,b.y);}OB(a,'rope',21,23,0,false);
  a.spawn=[4,7];}
 // ---------- apartments: layouts, zones, interior walls ----------
 const ZCOL={kitchen:'#ff9a3a',bedroom:'#5cc85a',bath:'#3a9aff',living:'#ff5a5a',lobby:'#e2cfae',office:'#7f9fd0'};
@@ -126,7 +144,7 @@ function load(){try{const j=JSON.parse(localStorage.getItem(SAVE));if(j&&j.v==9)
  try{const j=JSON.parse(localStorage.getItem('fantasytown_save_v9'));if(j&&j.v==9){migrateRooms(j.rooms);S=Object.assign(newState(),j);S.v=9;S.migrated=1;return 1;}}catch(e){}S=newState();
  if(['v8','v7','v6','v5'].some(v=>localStorage.getItem('fantasytown_save_'+v))){S.gold+=150;S.oldSave=1;}return 0;}
 function save(quiet){localStorage.setItem(SAVE,JSON.stringify(S));if(!quiet)toast('Game saved');}
-const loaded=load();if(S.rooms.office.lay!='ground'||!S.rooms.office.g2){S.rooms.office.furn.forEach(f=>{if(FURN[f.k]&&!FURN[f.k].fixed&&!OFFICE_DEFAULT.some(d=>d.k==f.k))S.finv[f.k]=(S.finv[f.k]||0)+1;});S.rooms.office={lay:'ground',g2:1,furn:OFFICE_DEFAULT.map(f=>({...f}))};if(S.area=='room:office')S.area='town';}
+const loaded=load();for(const n in S.offers)if(S.offers[n]>34)S.offers[n]=Math.round(23+(S.offers[n]-40)*9/40);if(S.rooms.office.lay!='ground'||!S.rooms.office.g2){S.rooms.office.furn.forEach(f=>{if(FURN[f.k]&&!FURN[f.k].fixed&&!OFFICE_DEFAULT.some(d=>d.k==f.k))S.finv[f.k]=(S.finv[f.k]||0)+1;});S.rooms.office={lay:'ground',g2:1,furn:OFFICE_DEFAULT.map(f=>({...f}))};if(S.area=='room:office')S.area='town';}
 genTown(TOWN);
 if(Q.has('t'))S.min=parseFloat(Q.get('t'))*60;
 let area=null;
@@ -157,8 +175,9 @@ function makeNpcs(a){const Ls=[];if(a.id=='town')Ls.push(npc('Mayor Lumen',18,14
 const TN={};// name -> runtime {n,floor,goal,place,px,py,path,inRoom,spot}
 const hourNow=()=>(S.min/60)%24+(S.min>=24*60?24:0);
 function schedule(name,day,h){const c=CHARS[name],i=TENANT_POOL.indexOf(name),hh=h-(i%4)*.25,hang=k=>c.hang[(day+k+i)%c.hang.length];
+ if(c.night){if(hh>=21||hh<3)return'club';if(hh<11)return'home';if(hh<12.5)return'gym';if(hh<13.5)return'cafe';if(hh<17)return hang(1);return'home';}
  if(hh<8.5||hh>=20)return'home';if(hh<12)return c.job||hang(0);if(hh<13.5)return(day+i+name.length)%2?'cafe':'restaurant';if(hh<17)return c.job?(day%3==2?hang(1):c.job):hang(1);return(day+i)%3==0?'restaurant':hang(2);}
-function scheduleText(name){const c=CHARS[name];return[['7–8:30','Home (room)'],['8:30–12',c.job?'Work · '+PLACES[c.job].n:PLACES[c.hang[0]].n],['12–1:30','Lunch · Cafe/Restaurant'],['1:30–5',c.job?'Work · '+PLACES[c.job].n:'Hangout'],['5–8','Evening · '+c.hang.map(p=>PLACES[p].n).join('/')],['8 PM','Back home']];}
+function scheduleText(name){const c=CHARS[name];if(c.night)return[['7–11','Home · sleeping after the late shift'],['11–12:30','Gym · daily workout'],['12:30–1:30','Lunch · Cafe'],['1:30–5','Gym / Plaza / Park'],['5–9 PM','Home'],['9 PM–3 AM','Work · Night Club door']];return[['7–8:30','Home (room)'],['8:30–12',c.job?'Work · '+PLACES[c.job].n:PLACES[c.hang[0]].n],['12–1:30','Lunch · Cafe/Restaurant'],['1:30–5',c.job?'Work · '+PLACES[c.job].n:'Hangout'],['5–8','Evening · '+c.hang.map(p=>PLACES[p].n).join('/')],['8 PM','Back home']];}
 function freeSpot(place,name){const sp=PLACES[place].spots,taken=Object.values(TN).filter(t=>t.n!=name&&t.place==place).map(t=>t.spot);let s=sp.find(q=>!taken.includes(q))||sp[0];return s;}
 function syncTenants(snap){S.condo.tenants.forEach((n,i)=>{if(!n){return;}let t=TN[n];if(!t){t=TN[n]={n,floor:i+1,goal:null,place:'home',px:0,py:0,path:null,inRoom:true,spot:null};snap=true;}t.floor=i+1;
   const want=schedule(n,S.day,hourNow());if(want==t.goal)return;t.goal=want;
@@ -172,10 +191,16 @@ function stepTenants(dt){for(const n in TN){const t=TN[n];if(!t.path||t.inRoom)c
   if(l<=sp){t.px=nx[0]+.5;t.py=nx[1]+.5;t.path.shift();if(!t.path.length)arrive(t);}else{t.px+=dx/l*sp;t.py+=dy/l*sp;t.face=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');}}}
 function tenantsHere(){if(area.room){const i=+area.room.slice(1)-1,n=S.condo.tenants[i];if(!(n&&TN[n]&&TN[n].inRoom))return[];const [hx,hy]=homeSpot(area.room);return[{n,px:hx,py:hy,room:1}];}return Object.values(TN).filter(t=>!t.inRoom);}
 // ---------- friendship / happiness ----------
+// money: British pounds. Rent offers rebalanced to ~£23–£32 per day (≈ £700–£970 per month)
+for(const n in CHARS){const c=CHARS[n];if(c.offer&&!c.wage)c.offer=c.offer.map(o=>Math.round(23+(o-40)*9/40));}
+const money=n=>'£'+Math.round(n).toLocaleString('en-GB'),perMonth=n=>money(n*30.4);
+function aresPay(){const c=CHARS.Ares,night=c.wage*c.shiftH,month=night*c.nights*52/12;return{night,week:night*c.nights,month,budget:month*.45/30.4};}
+const AEMO={k:null,until:0};function aresEmote(k,s=4){AEMO.k=k;AEMO.until=performance.now()+s*1000;}
+function aresLook(){const T=TN.Ares,now=performance.now(),em=AEMO.until>now?AEMO.k:null,pl=T&&(T.inRoom?'home':T.place);return{emote:em||(pl=='club'?'note':null),flex:em=='heart'||(pl=='gym'&&Math.sin(now/700)>.3),sit:pl=='cafe'||pl=='restaurant'};}
 const fr=n=>S.fr[n]||(S.fr[n]={p:0,talk:0,hang:0,scene:0});
 const frLv=n=>Math.min(5,Math.floor(fr(n).p/4));
 function happiness(n){const i=S.condo.tenants.indexOf(n);if(i<0)return 0;const id='f'+(i+1),R=S.rooms[id],c=CHARS[n];let h=20;
- R.furn.forEach(f=>{const F=FURN[f.k];if(f.k==c.fav)h+=18;else if(c.likes.includes(F.theme))h+=6;else h+=Math.min(3,F.comfort||0);});roomsDone(id).forEach(([z,a,b])=>{if(a==b)h+=6;});if(!rentable(id))h-=30;return Math.max(0,Math.min(100,h+frLv(n)*2));}
+ R.furn.forEach(f=>{const F=FURN[f.k];if(f.k==c.fav)h+=18;else if(c.loves&&c.loves.includes(f.k))h+=10;else if(c.likes.includes(F.theme))h+=6;else h+=Math.min(3,F.comfort||0);});roomsDone(id).forEach(([z,a,b])=>{if(a==b)h+=6;});if(!rentable(id))h-=30;return Math.max(0,Math.min(100,h+frLv(n)*2));}
 function likedIn(n){const i=S.condo.tenants.indexOf(n),R=S.rooms['f'+(i+1)],c=CHARS[n];return R.furn.filter(f=>f.k==c.fav||c.likes.includes(FURN[f.k].theme)).length;}
 function rentOf(i){const n=S.condo.tenants[i];if(!n)return 0;const o=S.offers[n]||50;return Math.round(o*(.6+.6*happiness(n)/100)*(1+frLv(n)*.03));}
 function rentTotal(){return S.condo.tenants.reduce((s,t,i)=>s+rentOf(i),0);}
@@ -231,33 +256,37 @@ function menuOpen(){return menuEl.style.display=='block';}
 function closeMenu(){menuEl.style.display='none';}
 function openMenu(h){menuEl.innerHTML=h+`<button class="x" onclick="closeMenu()">Close</button>`;menuEl.style.display='block';for(const k in keys)keys[k]=0;}
 window.closeMenu=closeMenu;
-const costStr=c=>c&&c.gold?c.gold+'g':'free';const canPay=c=>S.gold>=((c&&c.gold)||0);const pay=c=>{S.gold-=(c&&c.gold)||0;};
+const costStr=c=>c&&c.gold?money(c.gold):'free';const canPay=c=>S.gold>=((c&&c.gold)||0);const pay=c=>{S.gold-=(c&&c.gold)||0;};
 const thumbURL={};function fthumb(k){if(!thumbURL[k]){const sp=spriteFor(k,0),W0=sp.cv.width,H0=sp.cv.height,d=sp.cv.getContext('2d').getImageData(0,0,W0,H0).data;let x0=W0,y0=H0,x1=0,y1=0;for(let y=0;y<H0;y++)for(let x=0;x<W0;x++)if(d[(y*W0+x)*4+3]>20){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}const bw=Math.max(1,x1-x0+1),bh=Math.max(1,y1-y0+1),c=document.createElement('canvas');c.width=c.height=72;const g=c.getContext('2d'),sc2=Math.min(66/bw,66/bh);g.drawImage(sp.cv,x0,y0,bw,bh,(72-bw*sc2)/2,(72-bh*sc2)/2,bw*sc2,bh*sc2);thumbURL[k]=c.toDataURL();}return thumbURL[k];}
 let shopTab='kitchen';function furnShop(tab){if(tab)shopTab=tab;const cats={kitchen:'🍳 Kitchen',bedroom:'🛏 Bedroom',bath:'🚿 Bathroom',living:'🛋 Living',wall:'🖼 Wall decor',lobby:'🏢 Office'};
- let h=`<h3>🛋 FURNITURE SHOP</h3><p>Gold ${S.gold}g · Every unit needs <b>Toilet, Bed, Stove, Fridge</b> before it can be rented. Buy here, then place in DECOR mode.</p><div class="row">`+Object.entries(cats).map(([k,n])=>`<button style="flex:0 1 auto;${k==shopTab?'background:#ffd84a':''}" onclick="furnShop('${k}')">${n}</button>`).join('')+'</div><div class="grid">';
+ let h=`<h3>🛋 FURNITURE SHOP</h3><p>Cash ${money(S.gold)} · Every unit needs <b>Toilet, Bed, Stove, Fridge</b> before it can be rented. Buy here, then place in DECOR mode.</p><div class="row">`+Object.entries(cats).map(([k,n])=>`<button style="flex:0 1 auto;${k==shopTab?'background:#ffd84a':''}" onclick="furnShop('${k}')">${n}</button>`).join('')+'</div><div class="grid">';
  FURNLIST.filter(k=>{const F=FURN[k];return shopTab=='wall'?F.wall:!F.wall&&F.zone.includes(shopTab);}).forEach(k=>{const F=FURN[k];const fans=S.condo.tenants.filter(n=>n&&(CHARS[n].fav==k||CHARS[n].likes.includes(F.theme)));
-  h+=`<button class="it${canPay(F.cost)?'':' no'}" onclick="buyF('${k}')"><img src="${fthumb(k)}"><b>${F.n}</b><span class="th" style="background:${TCOL[F.theme]}">${FTHEME[F.theme]}</span>${F.req?'<span class="rq">REQUIRED</span>':''}<br>${F.cost.gold}g · ♥${F.comfort} · own ${S.finv[k]||0}${fans.length?'<br><small>♥ '+fans.join(', ')+'</small>':''}</button>`;});openMenu(h+'</div>');}
-window.buyF=k=>{const F=FURN[k];if(!canPay(F.cost)){toast('Not enough gold');return;}pay(F.cost);S.finv[k]=(S.finv[k]||0)+1;sfx(700);toast('Bought '+F.n);const sc=menuEl.scrollTop;furnShop();menuEl.scrollTop=sc;save(1);};window.furnShop=furnShop;
-function eatery(id){const P=PLACES[id],here=Object.values(TN).filter(t=>t.place==id);const food=id=='cafe'?['Cocoa',6]:['Noodle bowl',12];
- let h=`<h3>${id=='cafe'?'☕ CAFE':'🍜 RESTAURANT'}</h3><p>${here.length?'Here now: '+here.map(t=>t.n).join(', '):'No tenants here right now. Check the MAP or FOLLOW someone!'}</p><button onclick="treat('${id}')">Order a ${food[0]} · ${food[1]}g (♥ +1)</button>`;
- here.forEach(t=>h+=`<button onclick="closeMenu();hangOut('${t.n}')">Hang out with ${t.n} · ${food[1]}g · friendship +3</button>`);openMenu(h);}
-window.treat=id=>{const c=id=='cafe'?6:12;if(S.gold<c){toast('Not enough gold');return;}S.gold-=c;S.hearts++;sfx(880);toast(id=='cafe'?'Warm cocoa! ♥':'Delicious noodles! ♥');closeMenu();};
+  h+=`<button class="it${canPay(F.cost)?'':' no'}" onclick="buyF('${k}')"><img src="${fthumb(k)}"><b>${F.n}</b><span class="th" style="background:${TCOL[F.theme]}">${FTHEME[F.theme]}</span>${F.req?'<span class="rq">REQUIRED</span>':''}<br>${money(F.cost.gold)} · ♥${F.comfort} · own ${S.finv[k]||0}${fans.length?'<br><small>♥ '+fans.join(', ')+'</small>':''}</button>`;});openMenu(h+'</div>');}
+window.buyF=k=>{const F=FURN[k];if(!canPay(F.cost)){toast('Not enough money');return;}pay(F.cost);S.finv[k]=(S.finv[k]||0)+1;sfx(700);toast('Bought '+F.n);const sc=menuEl.scrollTop;furnShop();menuEl.scrollTop=sc;save(1);};window.furnShop=furnShop;
+function venue(id){const here=Object.values(TN).filter(t=>t.place==id),h=hourNow(),open=id=='gym'||h>=21||h<3;let x=`<h3>${id=='club'?'🪩 NIGHT CLUB':'🏋 LUMEN GYM'}</h3><p>${id=='club'?(open?'The doors are open (9 PM – 3 AM). Music, lights and lemonade!':'Closed. Opens at 9 PM — Ares works the door until 3 AM.'):'Open all day. Ares trains here every day around 11 AM.'}</p>`;
+ if(id=='gym')x+=`<button onclick="workout()">Work out · day pass £5 (♥ +1)</button>`;else if(open)x+=`<button onclick="workout('club')">Dance a bit · lemonade £4 (♥ +1)</button>`;
+ here.forEach(t=>x+=`<button onclick="closeMenu();hangOut('${t.n}')">${t.n=='Ares'?(id=='gym'?'Spot Ares on the bench':'Keep Ares company at the door'):'Hang out with '+t.n} · friendship +3</button>`);openMenu(x);}
+window.workout=k=>{const c=k=='club'?4:5;if(S.gold<c){toast('Not enough money');return;}S.gold-=c;S.hearts++;S.min+=45;sfx(880);toast(k=='club'?'You dance like nobody is watching. ♥':'Great workout! ♥');closeMenu();};
+function eatery(id){const P=PLACES[id],here=Object.values(TN).filter(t=>t.place==id);const food=id=='cafe'?['Cocoa',4]:['Noodle bowl',12];
+ let h=`<h3>${id=='cafe'?'☕ CAFE':'🍜 RESTAURANT'}</h3><p>${here.length?'Here now: '+here.map(t=>t.n).join(', '):'No tenants here right now. Check the MAP or FOLLOW someone!'}</p><button onclick="treat('${id}')">Order a ${food[0]} · ${money(food[1])} (♥ +1)</button>`;
+ here.forEach(t=>h+=`<button onclick="closeMenu();hangOut('${t.n}')">Hang out with ${t.n} · ${money(food[1])} · friendship +3</button>`);openMenu(h);}
+window.treat=id=>{const c=id=='cafe'?4:12;if(S.gold<c){toast('Not enough money');return;}S.gold-=c;S.hearts++;sfx(880);toast(id=='cafe'?'Warm cocoa! ♥':'Delicious noodles! ♥');closeMenu();};
 function notes(){const c=S.condo,tn=c.tenants.filter(Boolean);const goals=[[tn.length>0,'Post an ad, pick 1 of 3 applicants'],[S.condo.tenants.some(n=>n&&likedIn(n)>0),'Place a furniture piece a tenant likes'],[Object.values(S.fr).some(f=>f.scene>0),'Unlock a friendship scene (hang out at Lv1)'],[c.floors>1,'Renovate a second tenant floor'],[c.floors>=MAXF,'Open all 6 condo floors']];
- let h=`<h3>📒 NOTE</h3><p>Day ${S.day} · Tenants ${tn.length}/${c.floors} · Rent/day ${rentTotal()}g · ♥ ${S.hearts}</p>`+goals.map(([d,t])=>`<p>${d?'✅':'⬜'} ${t}</p>`).join('');
+ let h=`<h3>📒 NOTE</h3><p>Day ${S.day} · Tenants ${tn.length}/${c.floors} · Rent/day ${money(rentTotal())} · ♥ ${S.hearts}</p>`+goals.map(([d,t])=>`<p>${d?'✅':'⬜'} ${t}</p>`).join('');
  tn.forEach(n=>{const t=TN[n];h+=`<p><b>${n}</b> · ${'♥'.repeat(frLv(n))}${'♡'.repeat(5-frLv(n))} · happy ${happiness(n)}% · ${t?(t.inRoom?'Home':t.place=='walking'?'→ '+PLACES[t.dest].n:PLACES[t.place].n):''}</p>`;});openMenu(h);}
 function settings(){openMenu(`<h3>⚙ SETTINGS</h3><button onclick="S.opt.dpad=!S.opt.dpad;applyOpt();settings()">On-screen D-pad: ${S.opt.dpad?'ON':'OFF'} (tap-to-move always works)</button><button onclick="save();closeMenu()">Save now</button><button onclick="if(confirm('Reset all progress?')){localStorage.removeItem('${SAVE}');location.reload()}">Reset save</button><p>Fantasy Town ${VERSION}</p>`);}
 window.applyOpt=()=>document.body.classList.toggle('dpad',!!S.opt.dpad);window.settings=settings;window.save=save;
 // ---------- condo / advertising ----------
-function makeApps(){const pool=TENANT_POOL.filter(t=>!S.condo.tenants.includes(t));const r=[];while(r.length<3&&pool.length){const n=pool.splice(Math.floor(Math.random()*pool.length),1)[0],[lo,hi]=CHARS[n].offer;r.push({n,offer:lo+Math.round(Math.random()*(hi-lo)/5)*5});}return r;}
+function makeApps(){const pool=TENANT_POOL.filter(t=>!S.condo.tenants.includes(t));const r=[];if(!S.aresMet&&pool.includes('Ares')){pool.splice(pool.indexOf('Ares'),1);r.push({n:'Ares',offer:Math.round(aresPay().budget)});S.aresMet=1;}while(r.length<3&&pool.length){const n=pool.splice(Math.floor(Math.random()*pool.length),1)[0],[lo,hi]=CHARS[n].offer;r.push({n,offer:lo+Math.round(Math.random()*(hi-lo))});}return r;}
 window.condoAct=(k,arg)=>{const c=S.condo;
- if(k=='ad'){if(c.ad||c.apps){toast('An ad is already running');return;}if(S.gold<20){toast('Need 20g for an ad');return;}S.gold-=20;c.ad=1;toast('Ad posted! 3 applicants will visit tomorrow morning');sfx(700);save(1);}
+ if(k=='ad'){if(c.ad||c.apps){toast('An ad is already running');return;}if(S.gold<20){toast('Need £20 for an ad');return;}S.gold-=20;c.ad=1;toast('Ad posted! 3 applicants will visit tomorrow morning');sfx(700);save(1);}
  if(k=='apps'){showApps=true;}
  if(k=='pick'){const i=c.tenants.findIndex((t,j)=>!t&&rentable('f'+(j+1))),a=c.apps&&c.apps[arg];if(!a)return;if(i<0){const v=c.tenants.indexOf(null);toast(v<0?'No vacant floor — renovate first':`Floor ${v+1} isn't rentable yet — needs ${missing('f'+(v+1)).map(r=>REQ[r]).join(', ')}`);sfx(150);return;}c.tenants[i]=a.n;S.offers[a.n]=a.offer;const others=c.apps.filter((q,j)=>j!=arg).map(q=>q.n);c.apps=null;showApps=false;showCondo=false;
   syncTenants(true);toast(`${a.n} moved into Floor ${i+1}!`);if(others.length)toast(`${others.join(' & ')} thanked you and left`);sfx(990);save(1);
   startDialogue(a.n,[L(`Hi manager! I'm ${a.n}. Thank you for choosing me for Floor ${i+1}!`,'happy'),L(`I love ${CHARS[a.n].likes.map(t=>FTHEME[t]).join(' and ')} things, especially a ${FURN[CHARS[a.n].fav].n}.`),L('Come find me around town sometime!','happy')]);}
  if(k=='decline'){c.apps=null;showApps=false;toast('The applicants left. Post a new ad anytime');}
  if(k=='reno'){const n=c.floors+1,cost=renoCost(n);if(c.building){toast('Already under construction');return;}if(n>MAXF){toast('The condo is at max height');return;}if(!canPay(cost)){toast('Need '+costStr(cost));return;}pay(cost);c.building=1;toast(`Renovation started! Floor ${n} opens tomorrow`);sfx(500);save(1);}};
-function enterRoom(id){showCondo=false;goArea('room:'+id);}
+function enterRoom(id){showCondo=false;goArea('room:'+id);const n=id!='office'&&S.condo.tenants[+id.slice(1)-1];if(n=='Ares'&&TN.Ares&&TN.Ares.inRoom&&!window.NOGREET){const h=happiness(n),c=CHARS.Ares;setTimeout(()=>{if(!dlg.on){aresEmote(h>=70?'heart':h>=40?'surprise':'sweat');startDialogue('Ares',h>=70?c.home.good:h>=40?c.home.ok:c.home.bad);}},700);}}
 function drawCondo(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height,night=nightF();const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,night>.5?'#1a1a4a':'#7ac8ff');bg.addColorStop(1,night>.5?'#8a5a9a':'#ffd8e0');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
  if(night>.5)for(let i=0;i<50;i++){ctx.fillStyle='rgba(255,255,255,'+(.3+.3*Math.sin(t+i))+')';ctx.fillRect((i*137)%W,(i*71)%(H*.7),2,2);}
  btnList=[];const s=Math.min(1.2,Math.max(.6,H/600)),fw=Math.min(W-300*s,540*s),fh=118*s;if(condoScroll<0)condoScroll=Math.max(0,(S.condo.floors+2)*(fh+6*s)+90*s-H+60);const x0=Math.max(250*s,(W-fw)/2+40*s),base=H-40*s+condoScroll,c=S.condo,d=28*s;
@@ -284,7 +313,7 @@ function drawCondo(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height
  label(x0-d-10*s,y-fh+4*s,'G · ROUND LOBBY + RECEPTION │ MANAGER OFFICE');
  btn(x0+12*s,y-fh+20*s,124*s,30*s,'ENTER LOBBY','#38a0ff',()=>enterRoom('office'));
  if(c.apps)btn(x0+146*s,y-fh+20*s,200*s,30*s,'👥 VIEW 3 APPLICANTS','#9fff7a',()=>condoAct('apps'));
- else btn(x0+146*s,y-fh+20*s,200*s,30*s,c.ad?'AD POSTED · TOMORROW':'📣 POST AD · 20g','#ffd84a',()=>condoAct('ad'),c.ad);
+ else btn(x0+146*s,y-fh+20*s,200*s,30*s,c.ad?'AD POSTED · TOMORROW':'📣 POST AD · £20','#ffd84a',()=>condoAct('ad'),c.ad);
  for(let f=1;f<=c.floors;f++){y-=fh+6*s;const tn=c.tenants[f-1],R=S.rooms['f'+f];room(y,['#5cc85a','#3a9aff','#ff9a3a','#ff5a5a','#c86aff','#38c8c0'][(f-1)%6],'#e6dccb',R.furn.filter(q=>q.k!='rug').slice(0,4),tn);label(x0-d-10*s,y-fh+4*s,`${f}F · ${tn?tn.toUpperCase()+' · RENT '+rentOf(f-1)+'g · ☺ '+happiness(tn)+'%':'VACANT'}`,tn?'#9fff7a':'#ffd84a');
   btn(x0+12*s,y-50*s,92*s,30*s,'ENTER','#38a0ff',()=>enterRoom('f'+f));ctx.fillStyle='#2a2238';ctx.font=`bold ${Math.round(11*s)}px sans-serif`;const ms=missing('f'+f);ctx.fillStyle=ms.length?'#c8202a':'#1a7a3a';ctx.fillText(tn?'♥ Lv'+frLv(tn)+' · likes '+likedIn(tn)+' item(s)':ms.length?'⚠ needs '+ms.map(r=>REQ[r]).join(', '):'✅ ready to rent',x0+12*s,y-60*s);}
  y-=fh+6*s;if(c.floors<MAXF){ctx.fillStyle='#d8b888';ctx.fillRect(x0-d,y-fh,fw+d,fh);
@@ -298,7 +327,7 @@ function drawCondo(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height
  ctx.beginPath();ctx.roundRect(x0+fw/2-120*s,y-62*s,220*s,38*s,12*s);ctx.fillStyle='#2a2238';ctx.fill();ctx.shadowColor='#ff6ab0';ctx.shadowBlur=14;ctx.fillStyle='#ff9ad0';ctx.font=`bold ${Math.round(19*s)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('FANTASY CONDO',x0+fw/2-10*s,y-42*s);ctx.shadowBlur=0;ctx.textAlign='left';
  // info card
  const cw=Math.min(220*s,x0-d-30*s);ctx.beginPath();ctx.roundRect(14,96,cw,150*s,14);ctx.fillStyle='rgba(255,255,255,.93)';ctx.fill();ctx.strokeStyle='#2a2238';ctx.lineWidth=2;ctx.stroke();ctx.textBaseline='top';
- [`🏢 ${c.floors} tenant floor${c.floors>1?'s':''}`,`👥 Tenants ${c.tenants.filter(Boolean).length}/${c.floors}`,`💰 Rent/day ${rentTotal()}g`,c.apps?'📋 3 applicants waiting!':c.ad?'📋 Ad running':'📋 No ad posted','↕ drag / wheel to scroll'].forEach((l,i)=>{ctx.fillStyle=i==4?'#8a8a9a':'#2a2238';ctx.font=`bold ${Math.round((i==4?10:13)*s)}px sans-serif`;ctx.fillText(l,26,106+i*26*s);});ctx.textBaseline='alphabetic';}
+ [`🏢 ${c.floors} tenant floor${c.floors>1?'s':''}`,`👥 Tenants ${c.tenants.filter(Boolean).length}/${c.floors}`,`💰 Rent/day ${money(rentTotal())}`,c.apps?'📋 3 applicants waiting!':c.ad?'📋 Ad running':'📋 No ad posted','↕ drag / wheel to scroll'].forEach((l,i)=>{ctx.fillStyle=i==4?'#8a8a9a':'#2a2238';ctx.font=`bold ${Math.round((i==4?10:13)*s)}px sans-serif`;ctx.fillText(l,26,106+i*26*s);});ctx.textBaseline='alphabetic';}
 function drawApps(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height;btnList=[];const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#ffd8ec');g.addColorStop(1,'#c8d8ff');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  ctx.fillStyle='rgba(255,255,255,.25)';for(let i=-H;i<W;i+=46){ctx.beginPath();ctx.moveTo(i,H);ctx.lineTo(i+H,0);ctx.lineTo(i+H+18,0);ctx.lineTo(i+18,H);ctx.fill();}
  const apps=S.condo.apps||[],s=Math.min(1.25,Math.max(.62,Math.min(W/1100,H/640)));
@@ -313,7 +342,7 @@ function drawApps(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height;
   const chips=[...c.likes.map(k=>FTHEME[k]),'★ '+FURN[c.fav].n];ctx.font=`bold ${Math.round(11*s)}px sans-serif`;const ws=chips.map(q=>ctx.measureText(q).width+16*s),tot=ws.reduce((a,b)=>a+b,0)+(chips.length-1)*5;let cx=x+cw/2-tot/2;
   chips.forEach((q,j)=>{ctx.beginPath();ctx.roundRect(cx,ty-10*s,ws[j],20*s,10*s);ctx.fillStyle=j==chips.length-1?'#ffd84a':'#e6e0f4';ctx.fill();ctx.strokeStyle='#2a2238';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#2a2238';ctx.fillText(q,cx+ws[j]/2,ty+1);cx+=ws[j]+5;});ty+=24*s;
   ctx.font=`${Math.round(11*s)}px sans-serif`;ctx.fillStyle='#6a5a7a';ctx.fillText(c.job?'Works at the '+PLACES[c.job].n:'Free spirit · no job',x+cw/2,ty);ty+=24*s;
-  ctx.font=`bold ${Math.round(16*s)}px sans-serif`;ctx.fillStyle='#1a8a3a';ctx.fillText('Rent offer '+a.offer+'g/day',x+cw/2,ty);ty+=26*s;
+  ctx.font=`bold ${Math.round(16*s)}px sans-serif`;ctx.fillStyle='#1a8a3a';ctx.fillText('Rent offer '+money(a.offer)+'/day · ≈'+perMonth(a.offer)+'/mo',x+cw/2,ty);ty+=20*s;if(c.wage){ctx.font=`${Math.round(11*s)}px sans-serif`;ctx.fillStyle='#6a5a7a';const pp=aresPay();ctx.fillText('Door supervisor · £'+c.wage.toFixed(2)+'/h · ≈'+money(pp.month)+'/mo',x+cw/2,ty);}ty+=18*s;
   const q='“'+c.talks[0][0].t+'”';ctx.font=`italic ${Math.round(12*s)}px sans-serif`;ctx.fillStyle='#4a3a5a';let line='',ly2=ty;for(const wd of q.split(' ')){if(ctx.measureText(line+wd).width>cw-34*s){if(ly2<y+ch-70*s)ctx.fillText(line,x+cw/2,ly2);ly2+=16*s;line='';}line+=wd+' ';}if(ly2<y+ch-70*s)ctx.fillText(line,x+cw/2,ly2);
   const bw=cw*.7,bh=34*s,bx=x+cw/2-bw/2,by=y+ch-bh-12*s;ctx.beginPath();ctx.roundRect(bx,by,bw,bh,bh/2);ctx.fillStyle='#ff6ab0';ctx.fill();ctx.strokeStyle='#2a2238';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font=`bold ${Math.round(14*s)}px sans-serif`;ctx.fillText('CHOOSE '+a.n.split(' ').pop().toUpperCase(),bx+bw/2,by+bh/2+1);
   btnList.push({r:[bx,by,bw,bh],f:()=>condoAct('pick',i)});});
@@ -328,23 +357,25 @@ function dlgClose(){dlg.on=false;$('dlg').style.display='none';}
 $('dlgNext').onclick=e=>{e.stopPropagation();dlgNext();};$('dlgSkip').onclick=e=>{e.stopPropagation();dlgClose();};$('dlgHide').onclick=e=>{e.stopPropagation();dlg.hidden=true;$('dlgBox').style.visibility='hidden';};
 $('dlg').onclick=()=>{if(dlg.hidden){dlg.hidden=false;$('dlgBox').style.visibility='visible';}else dlgNext();};
 function gainFr(n,v){const f=fr(n),before=frLv(n);f.p+=v;S.hearts+=v;if(frLv(n)>before)toast(`♥ ${n} friendship Lv${frLv(n)}! A new scene is unlocked`);else toast(`♥ +${v} friendship with ${n}`);sfx(990);}
-function talkTenant(n){const c=CHARS[n],f=fr(n),lv=frLv(n);const conv=[...c.talks[(S.day+f.p)%c.talks.length]];const t=TN[n];
- if(t&&!t.inRoom&&t.place!='walking')conv.unshift(L(`Oh, hi! Fancy meeting you at the ${PLACES[t.place].n}.`,'surprised'));
- if(happiness(n)<50)conv.push(L(`My room could use something ${FTHEME[c.likes[0]]}... maybe a ${FURN[c.fav].n}?`));
+function talkTenant(n){const c=CHARS[n],f=fr(n),lv=frLv(n);const conv=c.greet?[...c.greet[Math.min(lv,c.greet.length-1)]]:[...c.talks[(S.day+f.p)%c.talks.length]];const t=TN[n];
+ if(t&&!t.inRoom&&t.place!='walking')conv.unshift(n=='Ares'?L(t.place=='club'?'Boss! You on the list? ...Ha, you\'re ALWAYS on the list.':t.place=='gym'?'Buddy! Grab a mat, I\'ll go easy on you. Maybe.':`Hey boss! Fancy seeing you at the ${PLACES[t.place].n}.`,'smile'):L(`Oh, hi! Fancy meeting you at the ${PLACES[t.place].n}.`,'surprised'));
+ if(n=='Ares'){aresEmote(happiness(n)>=60?'heart':'sweat');if(happiness(n)<50)conv.push(L('My room needs some iron, boss. A dumbbell rack would fix everything.','sad'));}
+ else if(happiness(n)<50)conv.push(L(`My room could use something ${FTHEME[c.likes[0]]}... maybe a ${FURN[c.fav].n}?`));
  if(f.scene<lv)conv.push(L('Hey, want to hang out sometime? I have something to show you!','happy'));
  startDialogue(n,conv);if(f.talk!=S.day){f.talk=S.day;gainFr(n,1);}}
 window.hangOut=n=>{const t=TN[n],f=fr(n);if(!t||t.inRoom&&!area.room||t.place=='walking'){toast(`${n} is busy right now`);return;}if(f.hang==S.day){toast(`You already hung out with ${n} today`);talkTenant(n);return;}
- const place=area.room?'home':t.place,cost=place=='cafe'?6:place=='restaurant'?12:0;if(S.gold<cost){toast('Not enough gold');return;}S.gold-=cost;f.hang=S.day;
+ const place=area.room?'home':t.place,cost=place=='cafe'?4:place=='restaurant'?12:place=='gym'?5:place=='club'?4:0;if(S.gold<cost){toast('Not enough money');return;}S.gold-=cost;f.hang=S.day;
  const lv=frLv(n);let lines;if(f.scene<lv&&f.scene<CHARS[n].scenes.length){lines=CHARS[n].scenes[f.scene];f.scene++;toast(`✨ Friendship scene ${f.scene}/3 with ${n}`);}
+ else if(n=='Ares')lines=[L(place=='gym'?'Spot me, buddy! ...See? Teamwork makes the dream work!':place=='club'?'Quiet night. Just you, me and the velvet rope. Living the dream, boss.':place=='home'?'Welcome to the gains cave! Shoes off, ego on.':'Nice one, boss. Next time I\'m buying. Probably.','smile'),L(lv<1?'You\'re alright, buddy. Same time tomorrow?':'Best hangout buddy in town. Don\'t let it go to your head!','teasing')];
  else lines=[L(place=='cafe'?'Cocoa break! Thanks for the treat.':place=='restaurant'?'Mmm, this is so good. Thanks for dinner!':place=='park'?'Nice day for a walk in the park, huh?':place=='home'?'Thanks for visiting my room!':'It is nice just hanging out like this.','happy'),L(lv<1?'We should do this again!':'You are a good friend, manager.')];
- S.min+=60;startDialogue(n,lines);gainFr(n,3);save(1);};
+ S.min+=60;startDialogue(n,lines);gainFr(n,3);if(n=='Ares')aresEmote('heart',6);save(1);};
 function nearNpc(){let best=null,bd=1.9;area.npcs.forEach(n=>{const d=Math.hypot(n.px/16-ptx(),n.py/16-pty());if(d<bd){bd=d;best={n:n.n,stat:n};}});tenantsHere().forEach(t=>{const d=Math.hypot(t.px-ptx(),t.py-pty());if(d<bd){bd=d;best={n:t.n};}});return best;}
 function talkNearest(){const n=nearNpc();if(!n)return;if(n.stat){const c=CHARS[n.n];startDialogue(n.n,c.talks[n.stat.li++%c.talks.length]);}else{selT=n.n;talkTenant(n.n);}}
 // ---------- feedback / day cycle ----------
 let toasts=[],fade=0,parts=[],banner=null,saveT=0,walkT=0,moving=false;
 function toast(t){toasts.push({t,life:2.8});if(toasts.length>3)toasts.shift();}
 let actx=null;function sfx(f){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=.05;g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.18);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.2);}catch(e){}}
-window.sleep=(passed)=>{closeMenu();S.day++;S.min=7*60;const c=S.condo,rent=rentTotal();S.gold+=rent;const msg=[];if(rent)msg.push(`Rent collected: +${rent}g`);
+window.sleep=(passed)=>{closeMenu();S.day++;S.min=7*60;const c=S.condo,rent=rentTotal();S.gold+=rent;const msg=[];if(rent)msg.push(`Rent collected: +${money(rent)}`);if(c.tenants.includes('Ares')){const h=happiness('Ares');if(h>=70)msg.push('Ares: “'+CHARS.Ares.rent.good+'”');else if(h<45)msg.push('Ares: “'+CHARS.Ares.rent.bad+'”');}
  if(c.building){c.building=0;c.floors++;c.tenants.push(null);const n=c.floors;S.rooms['f'+n]={lay:'unit',furn:starterFurn()};msg.push(`Floor ${n} is finished — basics included, decorate it with your rent money!`);}
  if(c.ad&&!c.apps){c.apps=makeApps();c.ad=0;if(c.apps.length)msg.push('3 applicants are waiting at the front desk!');}
  follow=null;for(const n in TN)TN[n].goal=null;syncTenants(true);goArea('room:office',[20,9]);fade=1.2;save(1);toast(passed?'You dozed off... Day '+S.day:'Good morning! Day '+S.day);msg.forEach(toast);};
@@ -374,15 +405,15 @@ function useAction(){if(decor){placeFurn();return;}const nn=nearNpc();if(nn){tal
 function act(tx,ty){const a=area,kind=interactAt(tx,ty);
  if(kind=='npc'){const n=a.npcs.find(n=>Math.floor(n.px/16)==tx&&Math.floor(n.py/16)==ty),c=CHARS[n.n];startDialogue(n.n,c.talks[n.li++%c.talks.length]);return;}
  if(kind=='exit'){back();return;}if(kind=='furn'){furnUse(furnAt(tx,ty));return;}
- if(kind=='bld'){const b=bldAt(tx,ty);if(b.id=='condo'){showCondo=true;condoScroll=-1;}else if(b.id=='fshop')furnShop();else if(b.id=='cafe'||b.id=='restaurant')eatery(b.id);else{const here=Object.values(TN).filter(t=>t.place=='studio');openMenu(`<h3>🎨 STUDIO</h3><p>A shared creative workspace. ${here.length?'Working here now: '+here.map(t=>t.n).join(', '):'Nobody is working right now.'}</p>`+here.map(t=>`<button onclick="closeMenu();hangOut('${t.n}')">Bring ${t.n} a snack break · friendship +3</button>`).join(''));}return;}}
+ if(kind=='bld'){const b=bldAt(tx,ty);if(b.id=='condo'){showCondo=true;condoScroll=-1;}else if(b.id=='fshop')furnShop();else if(b.id=='cafe'||b.id=='restaurant')eatery(b.id);else if(b.id=='club'||b.id=='gym')venue(b.id);else{const here=Object.values(TN).filter(t=>t.place=='studio');openMenu(`<h3>🎨 STUDIO</h3><p>A shared creative workspace. ${here.length?'Working here now: '+here.map(t=>t.n).join(', '):'Nobody is working right now.'}</p>`+here.map(t=>`<button onclick="closeMenu();hangOut('${t.n}')">Bring ${t.n} a snack break · friendship +3</button>`).join(''));}return;}}
 function deskMenu(){const c=S.condo;openMenu(`<h3>🛎 RECEPTION DESK</h3><p>Post a vacancy ad, meet applicants and register new tenants here.</p>`+
- (c.apps?`<button onclick="closeMenu();condoAct('apps')">👥 Review ${c.apps.length} applicants · register a tenant</button>`:c.ad?`<button disabled>📣 Ad posted — applicants arrive tomorrow</button>`:`<button onclick="closeMenu();condoAct('ad')">📣 Post vacancy ad · 20g</button>`)+
+ (c.apps?`<button onclick="closeMenu();condoAct('apps')">👥 Review ${c.apps.length} applicants · register a tenant</button>`:c.ad?`<button disabled>📣 Ad posted — applicants arrive tomorrow</button>`:`<button onclick="closeMenu();condoAct('ad')">📣 Post vacancy ad · £20</button>`)+
  `<button onclick="closeMenu();showCondo=true;condoScroll=-1">🏢 Building overview</button>`);}
 function furnUse(f){if(FURN[f.k].req=='bed'&&area.room=='office'){openMenu(`<h3>BED</h3><p>Sleep until morning? Rent is collected at dawn.</p><button onclick="sleep()">Sleep (save)</button>`);return;}
  if(f.k=='frontdesk'){deskMenu();return;}
  if(f.k=='elevator'){toast('🛗 Ding! Elevator to the tenant floors');sfx(990);showCondo=true;condoScroll=-1;return;}
  if(f.k=='stairs'){toast('The stairs are a long climb — the elevator is right beside them');return;}
- if(f.k=='execdesk'){const c=S.condo;openMenu(`<h3>💻 MANAGER COMPUTER</h3><p>Floors: ${c.floors} · Tenants: ${c.tenants.filter(Boolean).length} · Rent today ≈ ${rentTotal()}g<br>Gold: ${S.gold}g</p><button onclick="closeMenu();showCondo=true;condoScroll=-1">Open building overview</button>`);return;}
+ if(f.k=='execdesk'){const c=S.condo;openMenu(`<h3>💻 MANAGER COMPUTER</h3><p>Floors: ${c.floors} · Tenants: ${c.tenants.filter(Boolean).length} · Rent today ≈ ${money(rentTotal())}<br>Cash: ${money(S.gold)}</p><button onclick="closeMenu();showCondo=true;condoScroll=-1">Open building overview</button>`);return;}
  if(f.k=='fountain_lobby'){S.hearts++;toast('You toss a coin in the fountain. Make a wish! ♥');sfx(1200);return;}
  const msgs={tv:'You watch a cozy cooking show. ♥',fishtank:'The fish wiggle happily. ♥',bathtub:'Bubbles everywhere! So relaxing. ♥',bed:'A neatly made bed.',toilet:'Squeaky clean!',shower:'Fresh and clean. ♥',piano:'You play a little tune. ♪',arcade:'New high score! ♥',games:'One more round... ♥'};const T=FURN[f.k].tag;if(T)f={k:T.toLowerCase()==='bath'?'bathtub':T.toLowerCase()};S.hearts++;toast(msgs[f.k]||'Nice!');sfx(880);}
 // ---------- decor ----------
@@ -401,7 +432,8 @@ function tryPick(tx,ty){const R=S.rooms[area.room];const hit=f=>{const [w,d]=fdi
 function placeFurn(){const R=S.rooms[area.room];const g=furnGhost(),why=canFurn(g);if(why){toast(why);sfx(150);return;}
  if(!hold){if(!(S.finv[g.k]>0)){toast(`No ${g.F.n} in storage — buy one at the Furniture Shop`);sfx(150);return;}S.finv[g.k]--;}
  R.furn.push(Object.assign({k:g.k,x:g.x,y:g.y,v:g.F.wall?(g.y==0?0:1):0},g.r?{r:g.r}:{}));hold=null;ghostAt=null;refresh();sfx(760);const n=area.room=='office'?null:S.condo.tenants[+area.room.slice(1)-1];
- if(area.room!='office'&&rentable(area.room)&&!S.condo.tenants[+area.room.slice(1)-1])toast('✅ Unit is rentable now!');toast(`Placed ${g.F.n}`+(n?` · ${n} happiness ${happiness(n)}%`+(CHARS[n].fav==g.k||CHARS[n].likes.includes(g.F.theme)?' ♥ they love it!':''):''));save(1);}
+ if(area.room!='office'&&rentable(area.room)&&!S.condo.tenants[+area.room.slice(1)-1])toast('✅ Unit is rentable now!');if(n=='Ares'){const c=CHARS.Ares,k=g.k,m=k==c.fav?'fav':c.loves.includes(k)?'love':c.likes.includes(g.F.theme)?'like':'meh';aresEmote(m=='meh'?'sweat':'heart');toast('Ares: “'+c.furn[m]+'”');}
+ toast(`Placed ${g.F.n}`+(n?` · ${n} happiness ${happiness(n)}%`+(CHARS[n].fav==g.k||CHARS[n].likes.includes(g.F.theme)?' ♥ they love it!':''):''));save(1);}
 // ---------- update ----------
 function blocked(x,y){const r=.26;return[[x-r,y-r],[x+r,y-r],[x-r,y+r],[x+r,y+r]].some(([p,q])=>!walkable(Math.floor(p),Math.floor(q)));}
 function nightF(){const h=(S.min/60)%24;if(h>=6&&h<17)return 0;if(h>=17&&h<20)return(h-17)/3;if(h>=4&&h<6)return 1-(h-4)/2;return 1;}
@@ -440,7 +472,7 @@ function drawScene(t,night){const a=area,W=cv.width,H=cv.height;
  if(!a.room)for(let i=0;i<9;i++){const x=4+i%3,y=17+Math.floor(i/3),[cx,cy]=isoP(x+.5,y+.5);ctx.strokeStyle=`rgba(255,255,255,${.25+.3*Math.sin(t*2+i)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(cx-4,cy);ctx.quadraticCurveTo(cx,cy-1.5,cx+4,cy);ctx.stroke();}
  const Dr=[];a.objs.forEach(o=>{const F=FURN[o.k];Dr.push({k:o.sortK||o.x+o.w/2+o.y+o.d/2-(F&&F.flat?50:F&&F.wall?45:0)+(F&&F.air?200:0),f:()=>{if(o.k=='condo')drawSprite(ctx,condoSprite(S.condo.floors,S.condo.building),o.x,o.y);else drawSprite(ctx,spriteFor(o.k,o.v||0,o.r||0),o.x,o.y);}});});
  a.npcs.forEach(n=>Dr.push({k:n.px/16+n.py/16,f:()=>{const [x,y]=isoP(n.px/16,n.py/16);chibi(ctx,x,y,{...n.look,face:n.face},t+n.px,!!(n.dx||n.dy));}}));
- tenantsHere().forEach(tn=>Dr.push({k:tn.px+tn.py,f:()=>{const [x,y]=isoP(tn.px,tn.py);if(selT==tn.n){ell(ctx,x,y,9+Math.sin(t*5),4.5,null,follow==tn.n?'#ff6ab0':'#ffd84a',1.6);}const T=TN[tn.n];chibi(ctx,x,y,{...CHARS[tn.n].look,face:T&&T.path?T.face:'down'},t*1.3+tn.px,!!(T&&T.path));}}));
+ tenantsHere().forEach(tn=>Dr.push({k:tn.px+tn.py,f:()=>{const [x,y]=isoP(tn.px,tn.py);if(selT==tn.n){ell(ctx,x,y,9+Math.sin(t*5),4.5,null,follow==tn.n?'#ff6ab0':'#ffd84a',1.6);}const T=TN[tn.n];chibi(ctx,x,y,{...CHARS[tn.n].look,...(tn.n=='Ares'?aresLook():{}),face:T&&T.path?T.face:'down'},t*1.3+tn.px,!!(T&&T.path));}}));
  const pface=Math.abs(S.fx-S.fy)>Math.abs(S.fx+S.fy)?(S.fx>S.fy?'right':'left'):(S.fx+S.fy>0?'down':'up');
  Dr.push({k:ptx()+pty(),f:()=>{const [x,y]=isoP(ptx(),pty());chibi(ctx,x,y,{...PLOOK,face:pface},walkT,moving);}});
  Dr.sort((p,q)=>p.k-q.k).forEach(d=>d.f());
@@ -503,8 +535,8 @@ function drawMap(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height;b
  ctx.textAlign='left';ctx.textBaseline='alphabetic';}
 // ---------- DOM chrome ----------
 let lastTop='';function updateTop(){const h=Math.floor(S.min/60)%24,m=Math.floor(S.min%60/10)*10,ap=h<12?'AM':'PM',hh=(h%12)||12,tm=`DAY ${S.day} · ${hh}:${String(m).padStart(2,'0')} ${ap}`;const c=S.condo;
- const res=`<span class="chip">🏢 ${c.floors}F</span><span class="chip">👥 ${c.tenants.filter(Boolean).length}/${c.floors}</span><span class="chip">💰 ${rentTotal()}g/day</span><span class="chip">🛋 ${Object.values(S.finv).reduce((a,b)=>a+b,0)}</span>`;
- const key=tm+S.gold+S.hearts+res+(area&&area.name);if(key==lastTop)return;lastTop=key;$('timer').textContent=tm;$('gold').textContent=String(S.gold).padStart(8,'0');$('hearts').textContent=S.hearts;$('res').innerHTML=res;$('where').textContent=(area?area.name:'')+' · '+VERSION;}
+ const res=`<span class="chip">🏢 ${c.floors}F</span><span class="chip">👥 ${c.tenants.filter(Boolean).length}/${c.floors}</span><span class="chip">💰 ${money(rentTotal())}/day</span><span class="chip">🛋 ${Object.values(S.finv).reduce((a,b)=>a+b,0)}</span>`;
+ const key=tm+S.gold+S.hearts+res+(area&&area.name);if(key==lastTop)return;lastTop=key;$('timer').textContent=tm;$('gold').textContent=money(S.gold);$('hearts').textContent=S.hearts;$('res').innerHTML=res;$('where').textContent=(area?area.name:'')+' · '+VERSION;}
 let lastCard='';function updateButtons(){const modal=showMap||showCondo||showApps||dlg.on;const nn=!modal&&!menuOpen()&&nearNpc();$('talk').classList.toggle('show',!!nn);if(nn)$('talk').textContent='TALK · '+nn.n.split(' ')[0].toUpperCase();
  $('back').classList.toggle('show',!!(area.room||decor||showMap||showCondo||showApps||follow||selT));$('bbuild').textContent=area.room?(decor?'DONE':'DECOR'):'DECOR';document.body.classList.toggle('modal',modal);document.body.classList.toggle('decor',!!decor);document.body.classList.toggle('mapopen',showMap||showApps);
  const t=selTenant(),card=$('tcard');if(!t||modal||menuOpen()){card.style.display='none';if(selT&&!TN[selT])selT=null;return;}card.style.display='flex';
@@ -518,10 +550,10 @@ function frame(now){ctx=mainCtx;const dt=Math.min(.05,(now-last)/1000);last=now;
  updateTop();updateButtons();requestAnimationFrame(frame);}
 syncTenants(true);
 goArea(S.area.startsWith('room:')&&!S.rooms[S.area.slice(5)]?'town':S.area,[S.px/16-.5,S.py/16-.5]);applyOpt();
-if(!loaded)setTimeout(()=>{toast(S.oldSave?'Fantasy Town v0.0.0.8 — a new small town! Old save reset (+150g)':'Welcome to Lumen Town, manager! Tap the CONDO to post an ad');toast(isTouch?'Tap to walk · tap a tenant to FOLLOW':'Click to walk · E use · M map · tap a tenant to FOLLOW');},400);
+if(!loaded)setTimeout(()=>{toast(S.oldSave?'Fantasy Town v0.0.0.8 — a new small town! Old save reset (+£150)':'Welcome to Lumen Town, manager! Tap the CONDO to post an ad');toast(isTouch?'Tap to walk · tap a tenant to FOLLOW':'Click to walk · E use · M map · tap a tenant to FOLLOW');},400);
 requestAnimationFrame(frame);
 // ---------- test hooks ----------
 window.FT={get S(){return S},get TN(){return TN},CHARS,PLACES,act,goArea,enterRoom,walkTo,condoAct,startDialogue,talkTenant,hangOut:window.hangOut,syncTenants,schedule,happiness,rentOf,toggleFollow,frLv,
  setPos:(x,y)=>{S.px=(x+.5)*16;S.py=(y+.5)*16;camSnap=1;},placeFurn,set decor(v){decor=v},set fsel(v){fsel=v},set ghost(v){ghostAt=v},set map(v){showMap=v},set condo(v){showCondo=v},set apps(v){showApps=v},set scroll(v){condoScroll=v},set sel(v){selT=v},set follow(v){follow=v},get follow(){return follow},
- tryPlace:(k,x,y,r=0)=>{frot=r;S.finv[k]=(S.finv[k]||0)+1;hold=null;decor=true;fsel=DL().indexOf(k);ghostAt=[x,y];const why=canFurn(furnGhost());if(!why)placeFurn();else S.finv[k]--;decor=false;return why;},missing,rentable,DL:()=>DL(),DEMO:()=>DEMO_UNIT,rotateFurn,get frot(){return frot},homeSpot,bfsOn,get zoom(){return Z/DPR},get condoOpen(){return showCondo},get tags(){return tagRects.length},
+ tryPlace:(k,x,y,r=0)=>{frot=r;S.finv[k]=(S.finv[k]||0)+1;hold=null;decor=true;fsel=DL().indexOf(k);ghostAt=[x,y];const why=canFurn(furnGhost());if(!why)placeFurn();else S.finv[k]--;decor=false;return why;},missing,rentable,DL:()=>DL(),DEMO:()=>DEMO_UNIT,rotateFurn,get frot(){return frot},homeSpot,bfsOn,get zoom(){return Z/DPR},get condoOpen(){return showCondo},get tags(){return tagRects.length},aresPay,money,AEMO,
  setTime:h=>{S.min=h*60;syncTenants(true);},fastForward:(h)=>{const steps=Math.round(h*60/4*20);for(let i=0;i<steps;i++){S.min+=0.2;syncTenants(false);stepTenants(.05);}},get area(){return area}};

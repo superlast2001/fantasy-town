@@ -1,4 +1,4 @@
-# Fantasy Town v0.0.1.5
+# Fantasy Town v0.0.1.6
 Family-friendly isometric condo-manager life sim set in the small town of Lumen Town. Plain HTML5 canvas, no build step: open index.html.
 
 ## Town
@@ -24,3 +24,8 @@ Save: localStorage `fantasytown_save_v8` (older saves reset with +150g).
 
 ## Test
 `/workspace/tools/pwvenv/bin/python test.py` (headless Playwright, writes screenshot-*.png).
+
+## v0.0.1.6
+- New tenant **Ares** (night-club door supervisor, £13.50/h, 9pm–3am), guaranteed first applicant; daily gym visits, loves gym furniture (fav: dumbbell rack); dialogue per friendship level, home/furniture/rent reactions.
+- Night Club (neon sign, red carpet, velvet rope) and Lumen Gym added to town.
+- Currency is now £ (rent ≈ £700–£950/mo). Debug sheet: ares-sheet.html.
