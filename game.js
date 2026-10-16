@@ -1,7 +1,7 @@
 'use strict';
 const DPR=Math.min(2,window.devicePixelRatio||1);let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.2.2',SAVE='fantasytown_save_v10';
+const VERSION='v0.0.2.3',SAVE='fantasytown_save_v10';
 const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -414,7 +414,7 @@ function useAction(){if(decor){placeFurn();return;}const nn=nearNpc();if(nn){tal
  const cx=Math.floor(ptx()),cy=Math.floor(pty());for(const [i,j] of [[0,1],[1,0],[0,-1],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]]){const k=interactAt(cx+i,cy+j);if(k&&k!='exit'){faceTo(cx+i,cy+j);act(cx+i,cy+j);return;}}toast('Nothing here');}
 function act(tx,ty){const a=area,kind=interactAt(tx,ty);
  if(kind=='npc'){const n=a.npcs.find(n=>Math.floor(n.px/16)==tx&&Math.floor(n.py/16)==ty),c=CHARS[n.n];startDialogue(n.n,c.talks[n.li++%c.talks.length]);return;}
- if(kind=='exit'){back();return;}if(kind=='furn'){furnUse(furnAt(tx,ty));return;}
+ if(kind=='exit'){if(area.room=='office'&&window.travelMenu){travelMenu();return;}back();return;}if(kind=='furn'){furnUse(furnAt(tx,ty));return;}
  if(kind=='bld'){const b=bldAt(tx,ty);if(b.id=='condo'){showCondo=true;condoScroll=-1;}else if(b.id=='fshop')furnShop();else if(b.id=='cafe'||b.id=='restaurant')eatery(b.id);else if(b.id=='club'||b.id=='gym')venue(b.id);else{const here=Object.values(TN).filter(t=>t.place=='studio');openMenu(`<h3>🎨 STUDIO</h3><p>A shared creative workspace. ${here.length?'Working here now: '+here.map(t=>t.n).join(', '):'Nobody is working right now.'}</p>`+here.map(t=>`<button onclick="closeMenu();hangOut('${t.n}')">Bring ${t.n} a snack break · friendship +3</button>`).join(''));}return;}}
 function deskMenu(){const c=S.condo;openMenu(`<h3>🛎 RECEPTION DESK</h3><p>Post a vacancy ad, meet applicants and register new tenants here.</p>`+
  (c.apps?`<button onclick="closeMenu();condoAct('apps')">👥 Review ${c.apps.length} applicants · register a tenant</button>`:c.ad?`<button disabled>📣 Ad posted — applicants arrive tomorrow</button>`:`<button onclick="closeMenu();condoAct('ad')">📣 Post vacancy ad · £20</button>`)+
