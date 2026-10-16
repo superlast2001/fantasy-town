@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#2a2238">
-<title>Fantasy Town v0.0.0.7</title>
+<title>Fantasy Town v0.0.0.8</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#2a2238;overflow:hidden;touch-action:none;font-family:"Trebuchet MS",Verdana,sans-serif;color:#2a2238;-webkit-user-select:none;user-select:none}
@@ -45,6 +45,13 @@ body:not(.touch) #talk{right:20px}
 #dlgText{font-weight:bold;font-size:16px;line-height:1.35;min-height:44px}
 .dbt{position:absolute;bottom:8px;font-size:13px;color:#2a2238;cursor:pointer;background:none;border:none;font:inherit;font-weight:bold;padding:4px 8px}
 #dlgSkip{left:12px}#dlgHide{left:50%;transform:translateX(-50%)}#dlgNext{right:12px}
+/* tenant card */
+#tcard{position:fixed;left:calc(env(safe-area-inset-left) + 70px);bottom:12px;z-index:5;display:none;gap:10px;align-items:center;background:#fff;border:3px solid #2a2238;border-radius:18px;padding:6px 30px 6px 6px;box-shadow:0 4px 0 #2a2238}
+#tcPortrait{width:64px;height:64px;border-radius:50%;border:3px solid #ffb43a}
+#tcName{font-weight:bold;font-size:15px}#tcInfo{font-size:11px;color:#5a4a6a;margin:2px 0 4px;line-height:1.3}
+.tcb{display:flex;gap:5px}.tcb button{font:inherit;font-weight:bold;font-size:12px;border:2px solid #2a2238;border-radius:12px;padding:4px 10px;cursor:pointer;background:#ffd84a;color:#2a2238}
+#tFollow{background:#ff6ab0!important;color:#fff!important}#tHang.dim{opacity:.45}#tX{position:absolute;right:6px;top:4px;border:none;background:none;font-size:14px;cursor:pointer}
+@media (max-height:430px){#tcard{padding:4px 26px 4px 4px;bottom:6px}#tcPortrait{width:48px;height:48px}#tcName{font-size:13px}#tcInfo{font-size:10px}.tcb button{font-size:11px;padding:3px 8px}}
 /* touch controls */
 #touch{display:none;position:fixed;inset:0;pointer-events:none;z-index:4}
 body.touch #touch{display:block}body.modal #touch,body.modal #talk{display:none!important}body.mapopen #top{display:none}body.modal #res{visibility:hidden}
@@ -66,6 +73,7 @@ body.touch #touch{display:block}body.modal #touch,body.modal #talk{display:none!
 <div id="back" title="Back"></div>
 <div id="talk">TALK</div>
 <div id="menu"></div>
+<div id="tcard"><canvas id="tcPortrait" width="80" height="80"></canvas><div class="tci"><div id="tcName"></div><div id="tcInfo"></div><div class="tcb"><button id="tFollow">FOLLOW</button><button id="tTalk">TALK</button><button id="tHang">HANG OUT</button></div></div><button id="tX">✕</button></div>
 <div id="dlg"><canvas id="dlgPortrait" width="420" height="520"></canvas><div id="dlgBox"><div id="dlgName">NAME</div><div id="dlgText"></div><button class="dbt" id="dlgSkip">Skip&gt;&gt;</button><button class="dbt" id="dlgHide">Hide</button><button class="dbt" id="dlgNext">Next &gt;</button></div></div>
 <div id="touch">
  <div class="tb dp" data-k="up" style="left:calc(env(safe-area-inset-left) + 76px);bottom:124px">▲</div>
@@ -73,10 +81,10 @@ body.touch #touch{display:block}body.modal #touch,body.modal #talk{display:none!
  <div class="tb dp" data-k="left" style="left:calc(env(safe-area-inset-left) + 22px);bottom:70px">◀</div>
  <div class="tb dp" data-k="right" style="left:calc(env(safe-area-inset-left) + 130px);bottom:70px">▶</div>
  <div class="tb" data-k="act" style="right:calc(env(safe-area-inset-right) + 16px);bottom:14px;width:68px;height:68px;border-radius:50%;background:#ffd84a;font-size:15px">USE</div>
- <div class="tb" data-k="tool" style="right:calc(env(safe-area-inset-right) + 22px);bottom:96px;border-radius:50%;width:46px;height:46px;font-size:12px">NEXT</div>
- <div class="tb pill" id="bbuild" data-k="build" style="right:calc(env(safe-area-inset-right) + 80px);bottom:100px;background:#9fff7a">BUILD</div>
+ <div class="tb" data-k="tool" style="display:none" data-x="right:calc(env(safe-area-inset-right) + 22px);bottom:96px;border-radius:50%;width:46px;height:46px;font-size:12px">NEXT</div>
+ <div class="tb pill" id="bbuild" data-k="build" style="right:calc(env(safe-area-inset-right) + 80px);bottom:100px;background:#9fff7a">DECOR</div>
  <div class="tb pill" data-k="map" style="right:calc(env(safe-area-inset-right) + 16px);top:56px;background:#bfe8ff">MAP</div>
 </div>
 <div id="rot"><div class="ph"></div>Rotate your phone<br><small style="font-size:13px;opacity:.8">Fantasy Town plays in landscape</small></div>
-<script src="art.js"></script><script src="iso.js"></script><script src="objects.js"></script><script src="portrait.js"></script><script src="worldmap.js"></script><script src="game.js"></script>
+<script src="art.js"></script><script src="iso.js"></script><script src="objects.js"></script><script src="portrait.js"></script><script src="town.js"></script><script src="game.js"></script>
 </body></html>

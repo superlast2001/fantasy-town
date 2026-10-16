@@ -1,16 +1,20 @@
-# Fantasy Town v0.0.0.7
-Family-friendly isometric life/farming/condo sim. Plain HTML5 canvas, no build step: open index.html.
+# Fantasy Town v0.0.0.8
+Family-friendly isometric condo-manager life sim set in the small town of Lumen Town. Plain HTML5 canvas, no build step: open index.html.
 
-## Play
-- Tap/click to walk (pathfinding); tapping a target walks there and acts (till/plant/water/harvest, gather, fish, talk, enter).
-- Keys: WASD/arrows move, E/Space use, Q tool, B build, M map, Esc back. Optional d-pad in Settings (gear).
-- TALK button / tags open anime-portrait dialogue (Skip>> / Hide / Next >).
-- Fantasy Condo: ground-floor manager office + front desk (post ad 20g, register applicant), tenant floors above.
-  Renovate (120g x n, wood, ore) opens the next floor overnight. Each floor = one tenant; rent = 20 + comfort x3, paid when you sleep (office bed).
-- Decor mode in rooms: pick furniture, tap to preview, tap again to place; tap placed furniture to move it.
-- World map (MAP) with routes: walk, bus, train, boat, cable car, magic; fast travel once unlocked.
-- Landscape phone first: rotate overlay, fullscreen + landscape lock on first tap.
-- Save: localStorage `fantasytown_save_v7` (older saves reset with +150g bonus).
+## Town
+Fantasy Condo, City Park (pond, benches), Town Plaza (fountain, Mayor Lumen), Cafe, Restaurant, Furniture Shop, Studio. MAP shows the town, tenant locations; tap a place to go, tap a tenant bubble to follow.
+
+## Loop
+- Gold comes from rent, collected each morning (sleep in the office bed). Rent = applicant's offer × happiness × friendship bonus.
+- ADVERTISE: Front desk → Post ad (20g). Next morning 3 applicants appear, each with portrait, personality, liked themes, favourite furniture, job and rent offer. Choose one; the others leave.
+- Condo tower: ground floor office + front desk, tenant floors above; Renovate (150g × floor) to add a floor overnight (max 6).
+- Furniture Shop: buy furniture into storage; DECOR inside a room to place/move. Tenants' happiness rises with liked themes (Cozy/Nature/Tech/Books/Aqua/Fun) and their favourite item.
+- Schedules: home in the morning, work (Studio/Cafe/Restaurant/Furniture Shop) or hangouts (park/plaza/cafe) by day, lunch at cafe/restaurant, evening hangout, home at 8 PM. They walk the streets between places.
+- Tap a tenant → card with FOLLOW (camera tracks them), TALK, HANG OUT. Talking (+1/day) and hanging out (+3/day) raise friendship; each level unlocks one of 3 friendship scenes per tenant.
+
+## Controls
+Tap/click to walk; WASD/arrows, E use, T talk, F follow, M map, B decor, Esc back. Optional d-pad in settings. Landscape phone first (rotate overlay, fullscreen + landscape lock).
+Save: localStorage `fantasytown_save_v8` (older saves reset with +150g).
 
 ## Test
 `/workspace/tools/pwvenv/bin/python test.py` (headless Playwright, writes screenshot-*.png).
