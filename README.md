@@ -1,4 +1,4 @@
-# Fantasy Town v0.0.1.6
+# Fantasy Town v0.0.1.7
 Family-friendly isometric condo-manager life sim set in the small town of Lumen Town. Plain HTML5 canvas, no build step: open index.html.
 
 ## Town
@@ -25,7 +25,12 @@ Save: localStorage `fantasytown_save_v8` (older saves reset with +150g).
 ## Test
 `/workspace/tools/pwvenv/bin/python test.py` (headless Playwright, writes screenshot-*.png).
 
-## v0.0.1.6
+## v0.0.1.7
 - New tenant **Ares** (night-club door supervisor, £13.50/h, 9pm–3am), guaranteed first applicant; daily gym visits, loves gym furniture (fav: dumbbell rack); dialogue per friendship level, home/furniture/rent reactions.
 - Night Club (neon sign, red carpet, velvet rope) and Lumen Gym added to town.
 - Currency is now £ (rent ≈ £700–£950/mo). Debug sheet: ares-sheet.html.
+
+## v0.0.1.7
+- Ares art now uses the user's own reference sheet, sliced by `assets/ares/slice.py` (crop + background key only) into 39 PNGs: CG, turnaround, expressions, poses, chibi directions, walk frames, emotes. The contact sheet is `screenshot-ares-slices.png`.
+- Dialogue portrait: CG or the pose matching the emotion, plus an expression close-up inset. The in-world sprite uses the chibi directions, walk frames and emote sprites.
+- The Night Club sign was raised onto the roof and his club spots moved beside the door. The old drawn Ares art, the duplicate emote function and ares-sheet.html were removed.

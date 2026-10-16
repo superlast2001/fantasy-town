@@ -1,7 +1,7 @@
 'use strict';
 const DPR=Math.min(2,window.devicePixelRatio||1);let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.1.6',SAVE='fantasytown_save_v10';
+const VERSION='v0.0.1.7',SAVE='fantasytown_save_v10';
 const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -42,7 +42,7 @@ const CHARS={
  'Mayor Lumen':{look:{body:'#c09a2a',hair:'#f4f4f4',style:'short'},
   talks:[[L('Welcome to Lumen Town, manager! Small, but full of heart.','happy'),L('Happy tenants make a happy town. Post an ad at your front desk!')],[L('Tenants love rooms with their favourite things.','smile'),L('Check what they like before you decorate!','happy')]]},
 };
-// ===== v0.0.1.6 ARES — first custom tenant (original writing; cheeky, warm, family-friendly) =====
+// ===== v0.0.1.7 ARES — first custom tenant (original writing; cheeky, warm, family-friendly) =====
 CHARS.Ares={look:{ares:1,body:'#d9a07a',hair:'#14101a'},pers:'Confident · Loud · Big-brother',likes:['neon','modern'],fav:'dumbbells',loves:['dumbbells','weightbench','gymball','poster_gym'],job:'club',night:1,hang:['gym','plaza','park'],
  wage:13.5,shiftH:6,nights:5,offer:[25,28],
  talks:[[L('Yo! You run this place? Name\'s Ares. Night-club security. Don\'t worry, I only LOOK scary.','smile'),L('Door\'s my job, boss. Nobody gets past me without a smile.','teasing')]],
@@ -63,7 +63,7 @@ const TENANT_POOL=['Ares','Pip','Nova','Sigil','Amber','Juno','Kai','Mira','Vexa
 const CONDO={x:2,y:2,w:5,d:4,door:[4,6]};
 const BLDS=[{id:'club',x:21,y:20,w:5,d:3,door:[23,23]},{id:'gym',x:30,y:14,w:4,d:3,door:[32,17]},{id:'condo',x:2,y:2,w:5,d:4,door:[4,6]},{id:'cafe',x:9,y:3,w:4,d:3,door:[11,6]},{id:'restaurant',x:21,y:3,w:5,d:3,door:[23,6]},{id:'fshop',x:28,y:3,w:5,d:3,door:[30,6]},{id:'studio',x:25,y:14,w:4,d:3,door:[27,17]}];
 const PLACES={home:{n:'Home'},park:{n:'City Park',tag:[7,17],spots:[[6,15],[9,16],[8,21],[11,19],[3,15],[10,14]]},plaza:{n:'Town Plaza',tag:[17.5,15],spots:[[15,14],[20,14],[15,18],[20,17],[14,16]]},
- cafe:{n:'Cafe',tag:[11,4.5],spots:[[10,7],[12,7],[9,8],[13,8]]},restaurant:{n:'Restaurant',tag:[23.5,4.5],spots:[[22,7],[24,7],[25,8],[21,8]]},fshop:{n:'Furniture Shop',tag:[30.5,4.5],spots:[[29,7],[31,7],[32,8]]},club:{n:'Night Club',tag:[23.5,21.5],spots:[[22,23],[24,23],[21,23]]},gym:{n:'Gym',tag:[32,15.5],spots:[[31,18],[33,18],[30,18]]},
+ cafe:{n:'Cafe',tag:[11,4.5],spots:[[10,7],[12,7],[9,8],[13,8]]},restaurant:{n:'Restaurant',tag:[23.5,4.5],spots:[[22,7],[24,7],[25,8],[21,8]]},fshop:{n:'Furniture Shop',tag:[30.5,4.5],spots:[[29,7],[31,7],[32,8]]},club:{n:'Night Club',tag:[23.5,21.5],spots:[[25.2,23],[21,23],[25.6,22.6]]},gym:{n:'Gym',tag:[32,15.5],spots:[[31,18],[33,18],[30,18]]},
  studio:{n:'Studio',tag:[27,15.5],spots:[[26,18],[28,18],[25,19]]}};
 // v0.0.1.3 default layouts for the bigger rooms. Seating faces what it is for (r: 0 faces +y, 1 +x, 2 -y/back to camera, 3 -x)
 // v0.0.1.4 GROUND FLOOR: round marble lobby + curved reception, lounge, elevator/stairs, closed manager office, private staff room

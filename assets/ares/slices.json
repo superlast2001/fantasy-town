@@ -1,0 +1,158 @@
+{
+"cg": [
+326,
+753
+],
+"turn_front": [
+162,
+428
+],
+"turn_right": [
+117,
+428
+],
+"turn_back": [
+161,
+428
+],
+"turn_left": [
+123,
+428
+],
+"expr_normal": [
+119,
+135
+],
+"expr_smile": [
+118,
+135
+],
+"expr_teasing": [
+119,
+135
+],
+"expr_blushing": [
+116,
+135
+],
+"expr_angry": [
+119,
+135
+],
+"expr_serious": [
+118,
+135
+],
+"expr_surprised": [
+119,
+135
+],
+"expr_sad": [
+116,
+135
+],
+"pose_talking": [
+136,
+266
+],
+"pose_laugh": [
+125,
+266
+],
+"pose_teasing": [
+128,
+266
+],
+"pose_embarrassed": [
+123,
+266
+],
+"pose_angry": [
+119,
+266
+],
+"pose_thinking": [
+112,
+266
+],
+"pose_surprised": [
+149,
+266
+],
+"pose_serious": [
+136,
+266
+],
+"chibi_front": [
+68,
+93
+],
+"chibi_right": [
+67,
+92
+],
+"chibi_back": [
+70,
+93
+],
+"chibi_left": [
+66,
+93
+],
+"walk_0": [
+59,
+87
+],
+"walk_1": [
+56,
+87
+],
+"walk_2": [
+51,
+83
+],
+"walk_3": [
+53,
+81
+],
+"walk_4": [
+52,
+80
+],
+"walk_5": [
+51,
+79
+],
+"walk_6": [
+50,
+78
+],
+"emote_idle": [
+59,
+88
+],
+"emote_smile": [
+73,
+87
+],
+"emote_blush": [
+75,
+87
+],
+"emote_angry": [
+78,
+87
+],
+"emote_surprised": [
+73,
+88
+],
+"emote_happy": [
+72,
+90
+],
+"emote_sit": [
+118,
+93
+]
+}
