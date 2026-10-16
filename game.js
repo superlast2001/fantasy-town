@@ -1,7 +1,7 @@
 'use strict';
 const DPR=Math.min(2,window.devicePixelRatio||1);let ctx=null;const PB=document.createElement('canvas'),PBC=PB.getContext('2d');let PX=1;
 // Fantasy Town v0.0.0.8 — small-town condo life sim (family-friendly)
-const VERSION='v0.0.1.2',SAVE='fantasytown_save_v9';
+const VERSION='v0.0.1.3',SAVE='fantasytown_save_v10';
 const cv=document.getElementById('c'),mainCtx=cv.getContext('2d'),menuEl=document.getElementById('menu');
 const Q=new URLSearchParams(location.search),$=id=>document.getElementById(id);
 const G=0,ROAD=1,WATER=2,CONC=5,PATH=14,DARKG=15,FL1=20,FL2=21,FL3=22;
@@ -48,16 +48,23 @@ const CONDO={x:2,y:2,w:5,d:4,door:[4,6]};
 const BLDS=[{id:'condo',x:2,y:2,w:5,d:4,door:[4,6]},{id:'cafe',x:9,y:3,w:4,d:3,door:[11,6]},{id:'restaurant',x:21,y:3,w:5,d:3,door:[23,6]},{id:'fshop',x:28,y:3,w:5,d:3,door:[30,6]},{id:'studio',x:25,y:14,w:4,d:3,door:[27,17]}];
 const PLACES={home:{n:'Home'},park:{n:'City Park',tag:[7,17],spots:[[6,15],[9,16],[8,21],[11,19],[3,15],[10,14]]},plaza:{n:'Town Plaza',tag:[17.5,15],spots:[[15,14],[20,14],[15,18],[20,17],[14,16]]},
  cafe:{n:'Cafe',tag:[11,4.5],spots:[[10,7],[12,7],[9,8],[13,8]]},restaurant:{n:'Restaurant',tag:[23.5,4.5],spots:[[22,7],[24,7],[25,8],[21,8]]},fshop:{n:'Furniture Shop',tag:[30.5,4.5],spots:[[29,7],[31,7],[32,8]]},studio:{n:'Studio',tag:[27,15.5],spots:[[26,18],[28,18],[25,19]]}};
+// v0.0.1.3 default layouts for the bigger rooms. Seating faces what it is for (r: 0 faces +y, 1 +x, 2 -y/back to camera, 3 -x)
+const OFFICE_DEFAULT=[{k:'frontdesk',x:9,y:9},{k:'waitchairs',x:4,y:9,r:1},{k:'ficus_lobby',x:0,y:8},{k:'noticeboard',x:0,y:9,v:1},{k:'rug_lux',x:13,y:10},{k:'filecab',x:15,y:8},{k:'watercooler',x:19,y:8},{k:'plant_monstera',x:0,y:13},{k:'fire_ext',x:19,y:13},
+ {k:'bed_wood',x:0,y:1},{k:'nightstand',x:2,y:1},{k:'curtains',x:3,y:0},{k:'wardrobe_modern',x:4,y:0},{k:'tv',x:7,y:0},{k:'rug_wood',x:7,y:2},{k:'sofa',x:7,y:4,r:2},{k:'desk',x:11,y:0},{k:'plant_monstera',x:12,y:6},{k:'frame_art',x:0,y:4,v:1},
+ {k:'shower',x:14,y:0},{k:'bathsink',x:16,y:0},{k:'toilet',x:19,y:0},{k:'bathmat',x:16,y:2}];
+const DEMO_UNIT=[['counter',0,0],['stove',1,0],['sink',2,0],['counter_wood',3,0],['fridge',4,0],['coffeebar',5,0],['watercooler',8,0],['spiceshelf',0,2],['clock',0,4],['rug_wood',3,4],['dining',3,4],['fire_ext',8,8],['plant_monstera',0,8],
+ ['bed_wood',10,1],['nightstand',12,1],['frame_family',10,0],['curtains',13,0],['wardrobe',14,0],['desk',17,0],['rug_modern',13,4],['lavalamp',18,3],['plant_palm',18,8],['armchair_beach',16,6],
+ ['bathtub',20,0],['bathsink',23,0],['toilet',25,0],['bathmat',23,2],['towelrack',20,4],['plant_palm',25,8],
+ ['tv',0,12,1],['rug_lux',2,12],['coffeetable',2,12,1],['sofa_wood',4,12,3],['floorlamp',4,15],['bookshelf',6,10],['frame_art',0,15],['poster_surf',0,16],['plant_fiddle',0,17],
+ ['fireplace',16,10],['coffeetable_glass',16,12],['sofa',16,14,2],['fishtank',19,10],['arcade',25,10],['surfboard',25,13],['dumbbells',22,16],['gymball',20,15]];
 let S;
 function newState(){return{v:9,day:1,min:7*60,gold:600,area:'town',px:4.5*16,py:7.5*16,fx:0,fy:1,
  condo:{floors:1,building:0,ad:0,apps:null,tenants:[null]},offers:{},fr:{},
- rooms:{office:{lay:'office',furn:[{k:'frontdesk',x:5,y:7},{k:'waitchairs',x:1,y:8},{k:'ficus_lobby',x:0,y:6},{k:'watercooler',x:12,y:6},{k:'noticeboard',x:0,y:7,v:1},{k:'rug_lux',x:9,y:7},{k:'filecab',x:10,y:6},
-  {k:'bed_wood',x:0,y:1},{k:'nightstand',x:2,y:0},{k:'wardrobe_modern',x:5,y:0},{k:'desk',x:6,y:3},{k:'curtains',x:3,y:0},{k:'plant_monstera',x:8,y:0},{k:'rug_wood',x:3,y:2},{k:'frame_art',x:0,y:3,v:1},
-  {k:'toilet',x:13,y:0},{k:'bathsink',x:11,y:0},{k:'shower',x:10,y:0},{k:'bathmat',x:11,y:2},{k:'fire_ext',x:13,y:6}]},f1:{lay:'unit',furn:[]}},finv:{toilet:1,bed:1,stove:1,fridge:1,plant_monstera:1,rug_wood:1},
+ rooms:{office:{lay:'office',furn:OFFICE_DEFAULT.map(f=>({...f}))},f1:{lay:'unit',furn:[]}},finv:{toilet:1,bed:1,stove:1,fridge:1,plant_monstera:1,rug_wood:1},
  opt:{dpad:0},hearts:0};}
 const AF=(a,x,y,w,h,t)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(a.tile[j]&&i>=0&&i<a.cols)a.tile[j][i]=t;};
 const AS=(a,x,y,w,h,v=1)=>{for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(a.solid[j]&&i>=0&&i<a.cols)a.solid[j][i]=v;};
-const OB=(a,k,x,y,v=0,solid=true)=>{const o=OBJ[k]||FURN[k];a.objs.push({k,x,y,v,w:o.w,d:o.d});if(solid&&!o.flat&&!o.wall)AS(a,x,y,o.w,o.d);};
+const OB=(a,k,x,y,v=0,solid=true,r=0)=>{const o=OBJ[k]||FURN[k],w=r&1?o.d:o.w,d=r&1?o.w:o.d;a.objs.push({k,x,y,v,r,w,d});if(solid&&!o.flat&&!o.wall)AS(a,x,y,w,d);};
 function layout(a){a.tile=[];a.solid=[];a.objs=[];for(let y=0;y<a.rows;y++){a.tile.push(new Array(a.cols).fill(a.ground));a.solid.push(new Array(a.cols).fill(0));}}
 const TOWN={id:'town',name:'Lumen Town',cols:36,rows:24,ground:G,npcs:[]};
 function genTown(a){layout(a);
@@ -77,10 +84,17 @@ function genTown(a){layout(a);
 const ZCOL={kitchen:'#ff9a3a',bedroom:'#5cc85a',bath:'#3a9aff',living:'#ff5a5a',lobby:'#ffcf3a'};
 const ZFLOOR={kitchen:23,bath:26,bedroom:24,living:24,lobby:27,door:24};
 const LAY={
- unit:{cols:18,rows:12,exit:[9,11],spawn:[9,10],home:[8,9],zones:[['kitchen',0,0,6,6],['bedroom',7,0,6,6],['bath',14,0,4,6],['living',0,7,18,5]],hw:[6,[2,3,9,10,15]],vw:[[6,0,5],[13,0,5]],
-  wins:[['y',1.4,4.6,'kitchen'],['y',7.2,9.2,'bedroom'],['y',15,17,'bath'],['x',9.2,11.6,'living']]},
- office:{cols:14,rows:10,exit:[7,9],spawn:[7,8],home:[7,7],zones:[['bedroom',0,0,9,5],['bath',10,0,4,5],['lobby',0,6,14,4]],hw:[5,[3,4,11]],vw:[[9,0,4]],
-  wins:[['y',2,5.5,'bedroom'],['y',11,13,'bath'],['x',6.6,9,'lobby']]}};
+ // v0.0.1.3: bigger rooms (unit 18x12 -> 26x18, office 14x10 -> 20x14)
+ unit:{cols:26,rows:18,exit:[13,17],spawn:[13,16],home:[11,14],zones:[['kitchen',0,0,9,9],['bedroom',10,0,9,9],['bath',20,0,6,9],['living',0,10,26,8]],hw:[9,[4,5,14,15,22,23]],vw:[[9,0,8],[19,0,8]],
+  wins:[['y',1.4,4.6,'kitchen'],['y',13.2,16.2,'bedroom'],['y',21.5,24.5,'bath'],['x',12.2,15.8,'living']]},
+ office:{cols:20,rows:14,exit:[10,13],spawn:[10,12],home:[10,11],zones:[['bedroom',0,0,13,7],['bath',14,0,6,7],['lobby',0,8,20,6]],hw:[7,[5,6,16,17]],vw:[[13,0,6]],
+  wins:[['y',3.2,6.2,'bedroom'],['y',15.5,18.5,'bath'],['x',9.2,12.2,'lobby']]}};
+const LAY_OLD={unit:{zones:[['kitchen',0,0],['bedroom',7,0],['bath',14,0],['living',0,7]],hw:[6,[]],vw:[[6,0,5],[13,0,5]],dz:[0,0]},office:{zones:[['bedroom',0,0],['bath',10,0],['lobby',0,6]],hw:[5,[]],vw:[[9,0,4]]}};
+// remap a v9 (small-room) save into the bigger rooms: keep each item's offset inside its own room
+function migrateRooms(rooms){for(const id in rooms){const R=rooms[id],O=LAY_OLD[R.lay],N=LAY[R.lay];if(!O)continue;R.furn.forEach(f=>{let best=null;for(const [z,zx,zy] of O.zones)if(f.x>=zx&&f.y>=zy&&(!best||zx>=best[1]&&zy>=best[2]))best=[z,zx,zy];if(!best)return;const nz=N.zones.find(q=>q[0]==best[0]);if(!nz)return;f.x+=nz[1]-best[1];f.y+=nz[2]-best[2];});}}
+// furniture footprint with rotation (r: 0 faces +y, 1 faces +x, 2 faces -y, 3 faces -x)
+const fdim=(k,r)=>{const F=FURN[k];return r&1?[F.d,F.w]:[F.w,F.d];};
+const rotOpts=k=>{const F=FURN[k];return F.wall?1:F.back?4:2;};
 function zoneOf(L,x,y){if(y==L.hw[0])return L.hw[1].includes(x)?'door':'wall';for(const [cx,y0,y1] of L.vw)if(x==cx&&y>=y0&&y<=y1)return'wall';for(const [z,zx,zy,w,h] of L.zones)if(x>=zx&&y>=zy&&x<zx+w&&y<zy+h)return z;return'wall';}
 const ZI=['kitchen','bedroom','bath','living','lobby'];OBJ.iwall={w:1,d:1,h:40,draw(c,v){const vert=v>=10,col=ZCOL[ZI[v%10]]||'#ff8a7a',o={left:shade(col,.95),right:shade(col,.78),top:'#4a3a4a',r:0};if(vert)box(c,.38,0,0,.24,1,30,col,o);else box(c,0,.38,0,1,.24,30,col,o);if(vert)box(c,.33,0,30,.34,1,2,'#ffffff',{r:0});else box(c,0,.33,30,1,.34,2,'#ffffff',{r:0});if(vert)faceQ(c,.38,0,0,.24,1,'R',0,1,0,4,'#ffffff',null);else faceQ(c,0,.38,0,1,.24,'L',0,1,0,4,'#ffffff',null);}};
 const REQS=['toilet','bed','stove','fridge'];
@@ -92,8 +106,9 @@ function roomsDone(id){const h=unitHas(id);return Object.entries(KITS).map(([z,L
 function homeSpot(id){const a=area&&area.room==id?area:roomArea(id),L=LAY[S.rooms[id].lay];const q=[L.home];const seen=new Set();while(q.length){const [x,y]=q.shift(),k=x+','+y;if(seen.has(k))continue;seen.add(k);if(x<0||y<0||x>=a.cols||y>=a.rows)continue;if(!a.solid[y][x]&&!(x==L.exit[0]&&y==L.exit[1])&&zoneOf(L,x,y)!='door')return[x+.5,y+.5];[[1,0],[-1,0],[0,1],[0,-1]].forEach(([i,j])=>q.push([x+i,y+j]));}return L.home;}
 function roomArea(id){const R=S.rooms[id],L=LAY[R.lay];const tn=id=='office'?null:S.condo.tenants[+id.slice(1)-1];const a={id:'room:'+id,room:id,lay:L,name:id=='office'?'Manager Office':'Floor '+id.slice(1)+' · '+(tn||'Vacant'),cols:L.cols,rows:L.rows,ground:24,tile:[],solid:[],objs:[],npcs:[]};
  layout(a);for(let y=0;y<a.rows;y++)for(let x=0;x<a.cols;x++){const z=zoneOf(L,x,y);a.tile[y][x]=ZFLOOR[z]||24;if(z=='wall'){a.solid[y][x]=1;const vert=y!=L.hw[0];const fz=vert?zoneOf(L,x+1,y):zoneOf(L,x,y+1);a.objs.push({k:'iwall',x,y,w:1,d:1,v:(vert?10:0)+Math.max(0,ZI.indexOf(fz=='wall'||fz=='door'?'living':fz))});}}
- R.furn.forEach(f=>OB(a,f.k,f.x,f.y,f.v||0,true));a.exit=L.exit;a.spawn=L.spawn;return a;}
-function load(){try{const j=JSON.parse(localStorage.getItem(SAVE));if(j&&j.v==9){S=Object.assign(newState(),j);return 1;}}catch(e){}S=newState();
+ R.furn.forEach(f=>OB(a,f.k,f.x,f.y,f.v||0,true,f.r||0));a.exit=L.exit;a.spawn=L.spawn;return a;}
+function load(){try{const j=JSON.parse(localStorage.getItem(SAVE));if(j&&j.v==9){S=Object.assign(newState(),j);return 1;}}catch(e){}
+ try{const j=JSON.parse(localStorage.getItem('fantasytown_save_v9'));if(j&&j.v==9){migrateRooms(j.rooms);S=Object.assign(newState(),j);S.v=9;S.migrated=1;return 1;}}catch(e){}S=newState();
  if(['v8','v7','v6','v5'].some(v=>localStorage.getItem('fantasytown_save_'+v))){S.gold+=150;S.oldSave=1;}return 0;}
 function save(quiet){localStorage.setItem(SAVE,JSON.stringify(S));if(!quiet)toast('Game saved');}
 const loaded=load();genTown(TOWN);
@@ -157,7 +172,7 @@ addEventListener('keydown',ev=>{const k=ev.key.toLowerCase();
  if(showMap||showApps){if(k=='m'||k=='escape')back();return;}
  if(showCondo){if(k=='escape')showCondo=false;if(k=='arrowup'||k=='w')condoScroll+=60;if(k=='arrowdown'||k=='s')condoScroll=Math.max(0,condoScroll-60);ev.preventDefault();return;}
  keys[k]=1;if(k==' '||k=='e'||k=='enter'){useAction();ev.preventDefault();}
- if(k=='b')toggleDecor();if(k=='t')talkNearest();if(k=='f'&&selT)toggleFollow();
+ if(k=='b')toggleDecor();if(k=='r')rotateFurn();if(k=='t')talkNearest();if(k=='f'&&selT)toggleFollow();
  if(decor){const n=DL().length;if(k=='q'||k=='tab'||k=='x')fsel=(fsel+1)%n;if(k=='z')fsel=(fsel+n-1)%n;}
  if(k=='escape')back();if(k=='tab')ev.preventDefault();if(k=='m'&&!area.room)showMap=true;if(k.startsWith('arrow'))ev.preventDefault();});
 addEventListener('keyup',ev=>{keys[ev.key.toLowerCase()]=0;});
@@ -165,7 +180,7 @@ const isTouch=('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches
 let triedFS=false;function tryFS(){if(triedFS||!isTouch)return;triedFS=true;const el=document.documentElement;try{const p=el.requestFullscreen?el.requestFullscreen({navigationUI:'hide'}):el.webkitRequestFullscreen&&el.webkitRequestFullscreen();Promise.resolve(p).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{});}catch(e){}}
 addEventListener('pointerdown',tryFS,{capture:true});
 document.querySelectorAll('.tb').forEach(btn=>{const k=btn.dataset.k;const on=ev=>{ev.preventDefault();ev.stopPropagation();
-  if(k=='act')useAction();else if(k=='tool'){if(decor)fsel=(fsel+1)%DL().length;}else if(k=='map'){if(!area.room)showMap=!showMap;}else if(k=='build')toggleDecor();else keys['t_'+k]=1;};
+  if(k=='act')useAction();else if(k=='tool'){if(decor)fsel=(fsel+1)%DL().length;}else if(k=='map'){if(!area.room)showMap=!showMap;}else if(k=='build')toggleDecor();else if(k=='rotate')rotateFurn();else keys['t_'+k]=1;};
  const off=()=>{keys['t_'+k]=0;};btn.addEventListener('pointerdown',on);btn.addEventListener('pointerup',off);btn.addEventListener('pointerleave',off);btn.addEventListener('pointercancel',off);});
 $('talk').onpointerdown=e=>{e.preventDefault();talkNearest();};$('back').onpointerdown=e=>{e.preventDefault();back();};
 $('note').onpointerdown=e=>{e.preventDefault();notes();};$('gear').onpointerdown=e=>{e.preventDefault();settings();};
@@ -186,7 +201,7 @@ cv.addEventListener('wheel',ev=>{if(showCondo)condoScroll=Math.max(0,condoScroll
 function back(){if(dlg.on)return dlgClose();if(menuOpen())return closeMenu();if(showApps)return showApps=false;if(showMap)return showMap=false;if(showCondo)return showCondo=false;
  if(decor){if(hold){S.rooms[area.room].furn.push(hold);hold=null;refresh();}decor=false;ghostAt=null;return;}if(follow){follow=null;toast('Stopped following');return;}if(selT){selT=null;return;}
  if(area.room){goArea('town',[CONDO.door[0],CONDO.door[1]+1]);showCondo=true;}}
-function toggleDecor(){if(!area.room){toast('Decorate inside condo rooms · buy furniture at the Furniture Shop');return;}if(decor){back();return;}decor=true;hold=null;ghostAt=null;toast('DECOR — tap a tile to preview, tap again to place. Tap furniture to move it');}
+function toggleDecor(){if(!area.room){toast('Decorate inside condo rooms · buy furniture at the Furniture Shop');return;}if(decor){back();return;}decor=true;hold=null;ghostAt=null;frot=0;toast('DECOR — tap a tile to preview, tap again to place · R / ROTATE turns it. Tap furniture to move it');}
 function selTenant(){return selT&&TN[selT];}
 function toggleFollow(){const t=selTenant();if(!t)return;if(follow==t.n){follow=null;toast('Stopped following');return;}if(t.inRoom){toast(`${t.n} is at home on Floor ${t.floor}`);return;}if(area.room){goArea('town',[CONDO.door[0],CONDO.door[1]+1]);}follow=t.n;toast(`Following ${t.n} · ${t.place=='walking'?'heading to '+PLACES[t.dest].n:'at '+PLACES[t.place].n}`);}
 function approach(t,what){if(t.inRoom&&!area.room){toast(`${t.n} is at home — visit Floor ${t.floor}`);return;}
@@ -323,7 +338,7 @@ function walkTo(tx,ty){const sx=Math.floor(ptx()),sy=Math.floor(pty()),it=intera
 function faceTo(tx,ty){const dx=tx+.5-ptx(),dy=ty+.5-pty(),l=Math.hypot(dx,dy)||1;S.fx=dx/l;S.fy=dy/l;}
 // ---------- interaction ----------
 const bldAt=(tx,ty)=>BLDS.find(b=>tx>=b.x&&ty>=b.y&&tx<b.x+b.w&&ty<b.y+b.d);
-function furnAt(tx,ty){return area.room&&S.rooms[area.room].furn.find(f=>tx>=f.x&&ty>=f.y&&tx<f.x+FURN[f.k].w&&ty<f.y+FURN[f.k].d&&!FURN[f.k].flat);}
+function furnAt(tx,ty){return area.room&&S.rooms[area.room].furn.find(f=>{const [w,d]=fdim(f.k,f.r);return tx>=f.x&&ty>=f.y&&tx<f.x+w&&ty<f.y+d&&!FURN[f.k].flat;});}
 function interactAt(tx,ty){const a=area;if(a.npcs.some(n=>Math.floor(n.px/16)==tx&&Math.floor(n.py/16)==ty))return'npc';
  if(a.room){const f=furnAt(tx,ty);if(f&&FURN[f.k].tag)return'furn';if(tx==a.exit[0]&&ty==a.exit[1])return'exit';return null;}
  if(bldAt(tx,ty))return'bld';return null;}
@@ -338,20 +353,21 @@ function furnUse(f){if(FURN[f.k].req=='bed'&&area.room=='office'){openMenu(`<h3>
  if(f.k=='frontdesk'){showCondo=true;condoScroll=-1;return;}
  const msgs={tv:'You watch a cozy cooking show. ♥',fishtank:'The fish wiggle happily. ♥',bathtub:'Bubbles everywhere! So relaxing. ♥',bed:'A neatly made bed.',toilet:'Squeaky clean!',shower:'Fresh and clean. ♥',piano:'You play a little tune. ♪',arcade:'New high score! ♥',games:'One more round... ♥'};const T=FURN[f.k].tag;if(T)f={k:T.toLowerCase()==='bath'?'bathtub':T.toLowerCase()};S.hearts++;toast(msgs[f.k]||'Nice!');sfx(880);}
 // ---------- decor ----------
-function furnGhost(){const k=hold?hold.k:DL()[fsel],F=FURN[k];let x,y;if(ghostAt)[x,y]=ghostAt;else[x,y]=facingTile();return{k,x,y,w:F.w,d:F.d,F};}
+let frot=0;function furnGhost(){const k=hold?hold.k:DL()[fsel%DL().length],F=FURN[k],r=frot%rotOpts(k),[w,d]=fdim(k,r);let x,y;if(ghostAt)[x,y]=ghostAt;else[x,y]=facingTile();return{k,x,y,w,d,F,r};}
+function rotateFurn(){if(!decor)return;const k=hold?hold.k:DL()[fsel%DL().length],n=rotOpts(k);if(n<2){toast('Wall decor snaps to the wall');return;}frot=(frot%n+1)%n;toast(FURN[k].n+' · facing '+['down-left','down-right','up-right (back to you)','up-left (back to you)'][frot]);sfx(520);}
 function canFurn(g){const a=area,R=S.rooms[a.room],L=a.lay;if(g.x<0||g.y<0||g.x+g.w>a.cols||g.y+g.d>a.rows)return'Out of room';
  if(g.F.wall){if(g.y!=0&&g.x!=0)return'Wall decor goes on a tile touching the back wall';const z=zoneOf(L,g.x,g.y);if(z=='wall'||z=='door')return'Not on a doorway';
   for(const f of R.furn)if(FURN[f.k].wall&&f.x==g.x&&f.y==g.y&&(f.v||0)==(g.y==0?0:1))return'Occupied';return'';}
  const zs=new Set();for(let y=g.y;y<g.y+g.d;y++)for(let x=g.x;x<g.x+g.w;x++)zs.add(zoneOf(L,x,y));if(zs.has('wall'))return'Blocked by a wall';if(zs.has('door'))return'Keep the doorway clear';if(zs.size>1)return'Must fit inside one room';
  const z=[...zs][0];if(!g.F.zone.includes(z))return`${g.F.n} belongs in the ${g.F.zone.filter(q=>ZONES[q]).map(q=>ZONES[q]).join(' / ')}`;
  if(g.x<=a.exit[0]&&g.x+g.w>a.exit[0]&&g.y+g.d>a.exit[1])return'Keep the door clear';
- for(const f of R.furn){const F=FURN[f.k];if(F.wall)continue;if(g.x<f.x+F.w&&g.x+g.w>f.x&&g.y<f.y+F.d&&g.y+g.d>f.y&&(!!F.flat==!!g.F.flat))return'Occupied';}
+ for(const f of R.furn){const F=FURN[f.k];if(F.wall)continue;const [fw,fd]=fdim(f.k,f.r);if(g.x<f.x+fw&&g.x+g.w>f.x&&g.y<f.y+fd&&g.y+g.d>f.y&&(!!F.flat==!!g.F.flat))return'Occupied';}
  const px=Math.floor(ptx()),py=Math.floor(pty());if(!g.F.flat&&px>=g.x&&px<g.x+g.w&&py>=g.y&&py<g.y+g.d)return'You are standing there';
  if(!g.F.flat&&a.room!='office'&&tenantsHere().some(t=>t.px>=g.x&&t.px<g.x+g.w&&t.py>=g.y&&t.py<g.y+g.d))return'Someone is there';return'';}
-function tryPick(tx,ty){const R=S.rooms[area.room];const hit=f=>tx>=f.x&&ty>=f.y&&tx<f.x+FURN[f.k].w&&ty<f.y+FURN[f.k].d&&!FURN[f.k].fixed;const f=R.furn.find(f=>hit(f)&&!FURN[f.k].wall&&!FURN[f.k].flat)||R.furn.find(f=>hit(f)&&FURN[f.k].wall)||R.furn.find(hit);if(!f)return false;R.furn.splice(R.furn.indexOf(f),1);hold=f;refresh();toast('Picked up '+FURN[f.k].n+' — choose a spot, tap again to place');return true;}
+function tryPick(tx,ty){const R=S.rooms[area.room];const hit=f=>{const [w,d]=fdim(f.k,f.r);return tx>=f.x&&ty>=f.y&&tx<f.x+w&&ty<f.y+d&&!FURN[f.k].fixed;};const f=R.furn.find(f=>hit(f)&&!FURN[f.k].wall&&!FURN[f.k].flat)||R.furn.find(f=>hit(f)&&FURN[f.k].wall)||R.furn.find(hit);if(!f)return false;R.furn.splice(R.furn.indexOf(f),1);hold=f;frot=f.r||0;refresh();toast('Picked up '+FURN[f.k].n+' — choose a spot, tap again to place');return true;}
 function placeFurn(){const R=S.rooms[area.room];const g=furnGhost(),why=canFurn(g);if(why){toast(why);sfx(150);return;}
  if(!hold){if(!(S.finv[g.k]>0)){toast(`No ${g.F.n} in storage — buy one at the Furniture Shop`);sfx(150);return;}S.finv[g.k]--;}
- R.furn.push({k:g.k,x:g.x,y:g.y,v:g.F.wall?(g.y==0?0:1):0});hold=null;ghostAt=null;refresh();sfx(760);const n=area.room=='office'?null:S.condo.tenants[+area.room.slice(1)-1];
+ R.furn.push(Object.assign({k:g.k,x:g.x,y:g.y,v:g.F.wall?(g.y==0?0:1):0},g.r?{r:g.r}:{}));hold=null;ghostAt=null;refresh();sfx(760);const n=area.room=='office'?null:S.condo.tenants[+area.room.slice(1)-1];
  if(area.room!='office'&&rentable(area.room)&&!S.condo.tenants[+area.room.slice(1)-1])toast('✅ Unit is rentable now!');toast(`Placed ${g.F.n}`+(n?` · ${n} happiness ${happiness(n)}%`+(CHARS[n].fav==g.k||CHARS[n].likes.includes(g.F.theme)?' ♥ they love it!':''):''));save(1);}
 // ---------- update ----------
 function blocked(x,y){const r=.26;return[[x-r,y-r],[x+r,y-r],[x-r,y+r],[x+r,y+r]].some(([p,q])=>!walkable(Math.floor(p),Math.floor(q)));}
@@ -373,7 +389,7 @@ function update(dt){if(dlg.on){const l=dlg.lines[dlg.i];if(dlg.ch<l.t.length){dl
 let tagRects=[],hotRects=[],bOff=0,sc=1;
 function resize(){cv.width=Math.round(innerWidth*DPR);cv.height=Math.round(innerHeight*DPR);sc=DPR*Math.max(.72,Math.min(1.4,Math.min(innerWidth/1100,innerHeight/560)));$('rot').style.display=isTouch&&innerHeight>innerWidth?'flex':'none';}
 addEventListener('resize',resize);resize();
-function lightList(a){const Ls=[];a.objs.forEach(o=>{const d=OBJ[o.k]||FURN[o.k];(d&&d.light||[]).forEach(([x,y,z,r,c])=>Ls.push([o.x+x,o.y+y,z,r,c]));if(o.k=='condo')for(let f=0;f<=S.condo.floors;f++)Ls.push([o.x+2.5,o.y+4,14+f*26,44,'#ffd88a']);});return Ls;}
+function lightList(a){const Ls=[];a.objs.forEach(o=>{const d=OBJ[o.k]||FURN[o.k];(d&&d.light||[]).forEach(([x,y,z,r,c])=>{const q=o.r||0,X=q&1?y:x,Y=q&1?x:y;Ls.push([o.x+(q>=2?o.w-X:X),o.y+(q>=2?o.d-Y:Y),z,r,c]);});if(o.k=='condo')for(let f=0;f<=S.condo.floors;f++)Ls.push([o.x+2.5,o.y+4,14+f*26,44,'#ffd88a']);});return Ls;}
 function W2S(x,y,z){const [ix,iy]=isoP(x,y,z);return[cv.width/2+(ix-camS.x)*Z,cv.height/2+(iy-camS.y)*Z];}
 const PLOOK={body:'#3a8aff',hair:'#6a3a1a',style:'short',hat:'#e8c050',pants:'#2a3a6a'};
 function tenantAtScreen(sx,sy){let best=null,bd=1e9;tenantsHere().forEach(t=>{const [x,y]=W2S(t.px,t.py,0),dx=sx-x,dy=sy-y;if(Math.abs(dx)<12*Z&&dy<5*Z&&dy>-34*Z){const d=Math.abs(dx)+Math.abs(dy+14*Z);if(d<bd){bd=d;best=t;}}});return best;}
@@ -389,7 +405,7 @@ function drawScene(t,night){const a=area,W=cv.width,H=cv.height;
  ctx.setTransform(Z,0,0,Z,TX,TY);
  const gc=groundOf(a);ctx.drawImage(gc,-a.gox,-a.goy,gc.width/RS,gc.height/RS);
  if(!a.room)for(let i=0;i<9;i++){const x=4+i%3,y=17+Math.floor(i/3),[cx,cy]=isoP(x+.5,y+.5);ctx.strokeStyle=`rgba(255,255,255,${.25+.3*Math.sin(t*2+i)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(cx-4,cy);ctx.quadraticCurveTo(cx,cy-1.5,cx+4,cy);ctx.stroke();}
- const Dr=[];a.objs.forEach(o=>{const F=FURN[o.k];Dr.push({k:o.x+o.w/2+o.y+o.d/2-(F&&F.flat?50:F&&F.wall?45:0),f:()=>{if(o.k=='condo')drawSprite(ctx,condoSprite(S.condo.floors,S.condo.building),o.x,o.y);else drawSprite(ctx,spriteFor(o.k,o.v||0),o.x,o.y);}});});
+ const Dr=[];a.objs.forEach(o=>{const F=FURN[o.k];Dr.push({k:o.x+o.w/2+o.y+o.d/2-(F&&F.flat?50:F&&F.wall?45:0),f:()=>{if(o.k=='condo')drawSprite(ctx,condoSprite(S.condo.floors,S.condo.building),o.x,o.y);else drawSprite(ctx,spriteFor(o.k,o.v||0,o.r||0),o.x,o.y);}});});
  a.npcs.forEach(n=>Dr.push({k:n.px/16+n.py/16,f:()=>{const [x,y]=isoP(n.px/16,n.py/16);chibi(ctx,x,y,{...n.look,face:n.face},t+n.px,!!(n.dx||n.dy));}}));
  tenantsHere().forEach(tn=>Dr.push({k:tn.px+tn.py,f:()=>{const [x,y]=isoP(tn.px,tn.py);if(selT==tn.n){ell(ctx,x,y,9+Math.sin(t*5),4.5,null,follow==tn.n?'#ff6ab0':'#ffd84a',1.6);}const T=TN[tn.n];chibi(ctx,x,y,{...CHARS[tn.n].look,face:T&&T.path?T.face:'down'},t*1.3+tn.px,!!(T&&T.path));}}));
  const pface=Math.abs(S.fx-S.fy)>Math.abs(S.fx+S.fy)?(S.fx>S.fy?'right':'left'):(S.fx+S.fy>0?'down':'up');
@@ -397,7 +413,7 @@ function drawScene(t,night){const a=area,W=cv.width,H=cv.height;
  Dr.sort((p,q)=>p.k-q.k).forEach(d=>d.f());
  parts.forEach(p=>{const [x,y]=isoP(p.x,p.y,p.z);ell(ctx,x,y,1.3,1.3,p.c,null);});
  if(path&&path.length){const [gx,gy]=path[path.length-1],[cx,cy]=isoP(gx+.5,gy+.5);ell(ctx,cx,cy,6+Math.sin(t*6),3+Math.sin(t*6)*.5,null,'#ffffff',1.2);}
- if(decor){const g=furnGhost(),ok=!canFurn(g)&&(hold||S.finv[g.k]>0);ctx.globalAlpha=.5;poly(ctx,[isoP(g.x,g.y),isoP(g.x+g.w,g.y),isoP(g.x+g.w,g.y+g.d),isoP(g.x,g.y+g.d)],ok?'#3dff9a':'#ff5070','#fff',1.2);ctx.globalAlpha=.75;drawSprite(ctx,spriteFor(g.k),g.x,g.y);ctx.globalAlpha=1;}
+ if(decor){const g=furnGhost(),ok=!canFurn(g)&&(hold||S.finv[g.k]>0);ctx.globalAlpha=.5;poly(ctx,[isoP(g.x,g.y),isoP(g.x+g.w,g.y),isoP(g.x+g.w,g.y+g.d),isoP(g.x,g.y+g.d)],ok?'#3dff9a':'#ff5070','#fff',1.2);ctx.globalAlpha=.75;drawSprite(ctx,spriteFor(g.k,0,g.r),g.x,g.y);ctx.globalAlpha=1;}
  const nf=a.room?night*.15:night;ctx.setTransform(1,0,0,1,0,0);if(nf>0){ctx.fillStyle=`rgba(24,16,70,${.5*nf})`;ctx.fillRect(0,0,W,H);}
  ctx.setTransform(Z,0,0,Z,TX,TY);ctx.globalCompositeOperation='lighter';const ga=a.room?.25+.3*night:.06+.9*night;
  lightList(a).forEach(([x,y,z,r,c])=>{const [sx,sy]=isoP(x,y,z);ctx.globalAlpha=ga*.85;ctx.drawImage(glowS(c),sx-r,sy-r*.75,r*2,r*1.5);});ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
@@ -420,7 +436,7 @@ function drawHUD(t){ctx.setTransform(1,0,0,1,0,0);const W=cv.width,H=cv.height;h
   bOff=Math.max(0,Math.min(DL().length-n,fsel-3));for(let i=0;i<n;i++){const id=DL()[i+bOff];if(!id)break;const x=hx+i*(s+6),sel=i+bOff==fsel,own=S.finv[id]||0;hotRects.push([x,hy,s,s]);ctx.beginPath();ctx.roundRect(x,hy,s,s,9);ctx.fillStyle=sel?'#fff4d0':'#f4f0f8';ctx.fill();ctx.strokeStyle=sel?'#ffb43a':'#c8c0d8';ctx.lineWidth=sel?3:1.5;ctx.stroke();
    ctx.globalAlpha=own?1:.35;const sp=spriteFor(id),k=Math.min((s-6)/(sp.cv.width/RS),(s-6)/(sp.cv.height/RS)),w=sp.cv.width/RS*k,h=sp.cv.height/RS*k;ctx.drawImage(sp.cv,x+(s-w)/2,hy+(s-h)/2,w,h);ctx.globalAlpha=1;
    ctx.fillStyle='#2a2238';ctx.font=`bold ${Math.round(10*sc)}px sans-serif`;ctx.textAlign='right';ctx.fillText('×'+own,x+s-3,hy+s-4);ctx.textAlign='left';}
-  const F=FURN[hold?hold.k:DL()[fsel]],nm=area.room=='office'?null:S.condo.tenants[+area.room.slice(1)-1],love=nm&&(CHARS[nm].fav==(hold?hold.k:DL()[fsel])||CHARS[nm].likes.includes(F.theme));
+  const F=FURN[hold?hold.k:DL()[fsel%DL().length]],nm=area.room=='office'?null:S.condo.tenants[+area.room.slice(1)-1],love=nm&&(CHARS[nm].fav==(hold?hold.k:DL()[fsel%DL().length])||CHARS[nm].likes.includes(F.theme));
   const txt=hold?`Moving ${F.n} — tap a spot, tap again to place`:`${F.n} · ${FTHEME[F.theme]} · in storage ${S.finv[DL()[fsel]]||0}${love?' · ♥ '+nm+' likes this':''}`;
   ctx.font=`bold ${Math.round(12*sc)}px sans-serif`;const tw=ctx.measureText(txt).width+28;ctx.beginPath();ctx.roundRect(W/2-tw/2,hy-42*sc,tw,26*sc,13*sc);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#2a2238';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=love?'#c0306a':'#2a2238';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,W/2,hy-29*sc);}
  ctx.textAlign='center';ctx.textBaseline='middle';const tb=decor?hy-54*sc:H-20*sc;ctx.font=`bold ${Math.round(12*sc)}px sans-serif`;
@@ -455,7 +471,7 @@ let lastTop='';function updateTop(){const h=Math.floor(S.min/60)%24,m=Math.floor
  const res=`<span class="chip">🏢 ${c.floors}F</span><span class="chip">👥 ${c.tenants.filter(Boolean).length}/${c.floors}</span><span class="chip">💰 ${rentTotal()}g/day</span><span class="chip">🛋 ${Object.values(S.finv).reduce((a,b)=>a+b,0)}</span>`;
  const key=tm+S.gold+S.hearts+res+(area&&area.name);if(key==lastTop)return;lastTop=key;$('timer').textContent=tm;$('gold').textContent=String(S.gold).padStart(8,'0');$('hearts').textContent=S.hearts;$('res').innerHTML=res;$('where').textContent=(area?area.name:'')+' · '+VERSION;}
 let lastCard='';function updateButtons(){const modal=showMap||showCondo||showApps||dlg.on;const nn=!modal&&!menuOpen()&&nearNpc();$('talk').classList.toggle('show',!!nn);if(nn)$('talk').textContent='TALK · '+nn.n.split(' ')[0].toUpperCase();
- $('back').classList.toggle('show',!!(area.room||decor||showMap||showCondo||showApps||follow||selT));$('bbuild').textContent=area.room?(decor?'DONE':'DECOR'):'DECOR';document.body.classList.toggle('modal',modal);document.body.classList.toggle('mapopen',showMap||showApps);
+ $('back').classList.toggle('show',!!(area.room||decor||showMap||showCondo||showApps||follow||selT));$('bbuild').textContent=area.room?(decor?'DONE':'DECOR'):'DECOR';document.body.classList.toggle('modal',modal);document.body.classList.toggle('decor',!!decor);document.body.classList.toggle('mapopen',showMap||showApps);
  const t=selTenant(),card=$('tcard');if(!t||modal||menuOpen()){card.style.display='none';if(selT&&!TN[selT])selT=null;return;}card.style.display='flex';
  const loc=t.inRoom?'Home · Floor '+t.floor:t.place=='walking'?'Walking to '+PLACES[t.dest].n:'At the '+PLACES[t.place].n,f=fr(t.n),key=t.n+loc+f.p+f.hang+follow+S.day;if(key==lastCard)return;lastCard=key;
  const pc=$('tcPortrait').getContext('2d');pc.clearRect(0,0,80,80);pc.save();pc.beginPath();pc.arc(40,40,38,0,7);pc.clip();pc.fillStyle='#fff4d0';pc.fillRect(0,0,80,80);pc.drawImage(portrait(t.n,'smile'),-8,-6,96,118);pc.restore();
@@ -472,5 +488,5 @@ requestAnimationFrame(frame);
 // ---------- test hooks ----------
 window.FT={get S(){return S},get TN(){return TN},CHARS,PLACES,act,goArea,enterRoom,walkTo,condoAct,startDialogue,talkTenant,hangOut:window.hangOut,syncTenants,schedule,happiness,rentOf,toggleFollow,frLv,
  setPos:(x,y)=>{S.px=(x+.5)*16;S.py=(y+.5)*16;camSnap=1;},placeFurn,set decor(v){decor=v},set fsel(v){fsel=v},set ghost(v){ghostAt=v},set map(v){showMap=v},set condo(v){showCondo=v},set apps(v){showApps=v},set scroll(v){condoScroll=v},set sel(v){selT=v},set follow(v){follow=v},get follow(){return follow},
- tryPlace:(k,x,y)=>{S.finv[k]=(S.finv[k]||0)+1;hold=null;decor=true;fsel=DL().indexOf(k);ghostAt=[x,y];const why=canFurn(furnGhost());if(!why)placeFurn();else S.finv[k]--;decor=false;return why;},missing,rentable,DL:()=>DL(),
+ tryPlace:(k,x,y,r=0)=>{frot=r;S.finv[k]=(S.finv[k]||0)+1;hold=null;decor=true;fsel=DL().indexOf(k);ghostAt=[x,y];const why=canFurn(furnGhost());if(!why)placeFurn();else S.finv[k]--;decor=false;return why;},missing,rentable,DL:()=>DL(),DEMO:()=>DEMO_UNIT,rotateFurn,get frot(){return frot},homeSpot,bfsOn,get zoom(){return Z/DPR},
  setTime:h=>{S.min=h*60;syncTenants(true);},fastForward:(h)=>{const steps=Math.round(h*60/4*20);for(let i=0;i<steps;i++){S.min+=0.2;syncTenants(false);stepTenants(.05);}},get area(){return area}};
