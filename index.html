@@ -74,6 +74,11 @@ body.touch #touch{display:block}body.modal #touch,body.modal #talk{display:none!
 #rot .ph{width:60px;height:100px;border:4px solid #ffd84a;border-radius:12px;margin-bottom:20px;animation:r 2s infinite}
 @keyframes r{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 @media (max-height:430px){#timer{font-size:11px}#goldWrap{font-size:13px}#note{font-size:13px;padding:6px 16px 6px 22px}#gear{height:32px;width:34px;font-size:16px}.chip{font-size:11px;min-width:30px}#dlgText{font-size:14px;min-height:36px}#dlgBox{padding:14px 14px 30px;min-height:90px}}
+
+.rentbox{background:#fff8e0;border:2px solid #2a2238;border-radius:12px;padding:6px 10px;margin:6px 0}.rr{display:flex;justify-content:space-between;margin:3px 0}.rr span{color:#1a8a3a;font-weight:bold}.rr.tot{border-top:2px dashed #c8b890;padding-top:4px;font-size:1.1em}
+.relhd{display:flex;gap:10px;align-items:center}.relhd canvas{width:84px;height:104px;object-fit:cover;object-position:top;border-radius:12px;border:2px solid #2a2238;background:#fff4d0}.hrt{color:#ff4f8a;font-size:22px;letter-spacing:2px}.bar{height:10px;background:#eee;border:2px solid #2a2238;border-radius:6px;overflow:hidden;margin:4px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff8ab0,#ff4f8a)}
+.ladder{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.ladder span{flex:1 1 30%;font-size:12px;background:#eee;border-radius:8px;padding:4px;text-align:center;color:#777}.ladder span.on{background:#ffe0ec;color:#c81a5a;font-weight:bold}.ladder small{display:block;font-weight:normal;font-size:10px}
+small.hate{color:#c8283a}
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="top">
@@ -84,7 +89,7 @@ body.touch #touch{display:block}body.modal #touch,body.modal #talk{display:none!
 <div id="back" title="Back"></div>
 <div id="talk">TALK</div>
 <div id="menu"></div>
-<div id="tcard"><canvas id="tcPortrait" width="80" height="80"></canvas><div class="tci"><div id="tcName"></div><div id="tcInfo"></div><div class="tcb"><button id="tFollow">FOLLOW</button><button id="tTalk">TALK</button><button id="tHang">HANG OUT</button></div></div><button id="tX">✕</button></div>
+<div id="tcard"><canvas id="tcPortrait" width="80" height="80"></canvas><div class="tci"><div id="tcName"></div><div id="tcInfo"></div><div class="tcb"><button id="tFollow">FOLLOW</button><button id="tTalk">TALK</button><button id="tHang">HANG OUT</button><button id="tRel">♥ MORE</button></div></div><button id="tX">✕</button></div>
 <div id="dlg"><canvas id="dlgPortrait" width="420" height="520"></canvas><div id="dlgBox"><canvas id="dlgFace"></canvas><div id="dlgName">NAME</div><div id="dlgText"></div><button class="dbt" id="dlgSkip">Skip&gt;&gt;</button><button class="dbt" id="dlgHide">Hide</button><button class="dbt" id="dlgNext">Next &gt;</button></div></div>
 <div id="touch">
  <div class="tb dp" data-k="up" style="left:calc(env(safe-area-inset-left) + 76px);bottom:124px">▲</div>
@@ -98,5 +103,5 @@ body.touch #touch{display:block}body.modal #touch,body.modal #talk{display:none!
  <div class="tb pill" data-k="map" style="right:calc(env(safe-area-inset-right) + 16px);top:56px;background:#bfe8ff">MAP</div>
 </div>
 
-<script src="art.js"></script><script src="iso.js"></script><script src="objects.js"></script><script src="portrait.js"></script><script src="furniture.js"></script><script src="illus.js"></script><script src="lobby.js"></script><script src="town.js"></script><script src="ares.js"></script><script src="game.js"></script>
+<script src="art.js"></script><script src="iso.js"></script><script src="objects.js"></script><script src="portrait.js"></script><script src="furniture.js"></script><script src="illus.js"></script><script src="lobby.js"></script><script src="furn2.js"></script><script src="town.js"></script><script src="ares.js"></script><script src="game.js"></script><script src="gymnpc.js"></script><script src="v21.js"></script>
 </body></html>
