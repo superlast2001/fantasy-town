@@ -38,3 +38,4 @@ Save: localStorage `fantasytown_save_v8` (older saves reset with +150g).
 ## v0.0.1.8
 - Ares dialogue: the CG is shown at native resolution (never upscaled, sized for devicePixelRatio), keeps its painted background, and sits in a red frame with an 8px side feather and a bottom fade behind the text box. The expression close-up is a badge anchored to the text box.
 - In-world: emote icons are cut from the sheet and drawn at native size beside his head, following him. Edge alpha is decontaminated against the panel colour, and there is a soft radial ground shadow.
+- Dialogue art: the CG figure is cut from its garden (alpha only, via `assets/ares/cut_cg.py` + `post_cg.py`) and stands over the live, dimmed location (room or town). It is shown 1:1, never upscaled, anchored to the bottom-left so his left-arm crop sits on the screen edge and his hair top runs off-screen. It has a soft warm rim glow, and his legs fade out behind the text box.

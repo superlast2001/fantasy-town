@@ -134,6 +134,13 @@ async def main():
     await ar.evaluate("FT.goArea('town',[23,22]);FT.setTime(22)");await ar.wait_for_timeout(300)
     print('22h',await ar.evaluate("FT.TN.Ares.place"))
     await ar.evaluate("FT.setPos(24,22)");await ar.wait_for_timeout(900);await ar.screenshot(path='screenshot-nightclub.png')
+    await ar.evaluate("document.getElementById('dlg').style.display=='block'&&document.getElementById('dlgSkip').click()")
+    await ar.evaluate("FT.TN.Ares.px=24.5;FT.TN.Ares.py=22.4;FT.setPos(24,23)");await ar.wait_for_timeout(400)
+    tb=ar.get_by_text('TALK · ARES')
+    if await tb.count():
+        await tb.first.click();await ar.wait_for_timeout(3500);await ar.screenshot(path='screenshot-ares-dialogue-town.png');print('town dlg',await ar.evaluate("document.getElementById('dlgText').textContent.slice(0,60)"))
+        await ar.evaluate("document.getElementById('dlgSkip').click()");await ar.wait_for_timeout(300)
+    else: print('no talk button')
     await ar.evaluate("FT.act(23,21)");await ar.wait_for_timeout(200);print('club menu',await ar.evaluate("document.getElementById('menu').innerText.slice(0,80)"));await ar.evaluate("closeMenu()")
     await ar.evaluate("FT.setTime(11.8);FT.goArea('town',[32,18])");await ar.wait_for_timeout(600);print('11:48',await ar.evaluate("FT.TN.Ares.place"));await ar.screenshot(path='/tmp/gym.png')
     await ar.evaluate("FT.act(31,15)");await ar.wait_for_timeout(200);print('gym menu',await ar.evaluate("document.getElementById('menu').innerText.slice(0,60)"));await ar.evaluate("closeMenu()")

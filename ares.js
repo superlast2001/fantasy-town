@@ -13,14 +13,16 @@ const aresReady=n=>{const i=ARES_IMG[n];return i&&i.complete&&i.naturalWidth>0;}
 // Dialogue art: the CG shown at native resolution in a clean frame, keeping its own painted background;
 // only the frame's alpha is feathered (sides) and faded (bottom, behind the text box) so no crop edge shows.
 let _adc=null;
-function aresDialogueArt(){if(_adc)return _adc;const b=ARES_IMG.cg;if(!aresReady('cg'))return null;const W=b.naturalWidth,H=b.naturalHeight;
- const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(b,0,0);
- g.strokeStyle='rgba(232,50,58,.9)';g.lineWidth=4;g.beginPath();g.roundRect(2,2,W-4,H-4,18);g.stroke();
- g.globalCompositeOperation='destination-in';const m=document.createElement('canvas');m.width=W;m.height=H;const q=m.getContext('2d');
- q.beginPath();q.roundRect(0,0,W,H,18);q.fillStyle='#000';q.fill();q.globalCompositeOperation='destination-out';
- const fx=8;[[0,fx,1],[W,W-fx,1]].forEach(([a0,a1])=>{const lg=q.createLinearGradient(a0,0,a1,0);lg.addColorStop(0,'rgba(0,0,0,1)');lg.addColorStop(1,'rgba(0,0,0,0)');q.fillStyle=lg;q.fillRect(Math.min(a0,a1),0,fx,H);});
- const bg=q.createLinearGradient(0,H*.68,0,H);bg.addColorStop(0,'rgba(0,0,0,0)');bg.addColorStop(1,'rgba(0,0,0,1)');q.fillStyle=bg;q.fillRect(0,H*.68,W,H*.32);
- g.drawImage(m,0,0);return _adc=c;}
+{const im=new Image();im.src='assets/ares/cg_cut.png';ARES_IMG.cg_cut=im;}
+// Big model over the live (dimmed) scene: the CG figure cut from its garden (alpha only), a soft warm rim glow,
+// shown 1:1 anchored to the bottom-left screen corner (his left-arm crop lies on the screen edge, the right elbow crop is feathered), and the legs fading out behind the text box.
+function aresDialogueArt(){if(_adc)return _adc;if(!aresReady('cg_cut'))return null;const b=ARES_IMG.cg_cut,P=14,W=b.naturalWidth+P*2,H=b.naturalHeight+P;
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ g.save();g.shadowColor='rgba(255,214,190,.55)';g.shadowBlur=10;g.drawImage(b,P,P);g.restore();g.drawImage(b,P,P);
+ g.globalCompositeOperation='destination-out';
+ [[W-P,W-P-30]].forEach(([a0,a1])=>{const lg=g.createLinearGradient(a0,0,a1,0);lg.addColorStop(0,'rgba(0,0,0,1)');lg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=lg;g.fillRect(Math.min(a0,a1)-(a0<a1?P:0),0,30+P,H);});
+ const bg=g.createLinearGradient(0,H*.62,0,H*.97);bg.addColorStop(0,'rgba(0,0,0,0)');bg.addColorStop(1,'rgba(0,0,0,1)');g.fillStyle=bg;g.fillRect(0,H*.62,W,H*.38);
+ return _adc=c;}
 // small face badge = the sheet's close-up for the line's emotion (shown at <= native size, anchored to the text box)
 function aresFace(expr){expr={happy:'smile',laugh:'smile',smirk:'teasing',embarrassed:'blush',blushing:'blush',thinking:'serious'}[expr]||expr;if(!ARES_EXPR.includes(expr))expr='smile';const n='expr_'+(expr=='blush'?'blushing':expr);return aresReady(n)?ARES_IMG[n]:null;}
 // small uses (applicant card, tenant list): the CG's upper body at native pixels, 420:520 aspect
