@@ -83,7 +83,7 @@ const DEMO_UNIT=[['counter',0,0],['stove',1,0],['sink',2,0],['counter_wood',3,0]
  ['tv',0,12,1],['rug_lux',2,12],['coffeetable',2,12,1],['sofa_wood',4,12,3],['floorlamp',4,15],['bookshelf',6,10],['frame_art',0,15],['poster_surf',0,16],['plant_fiddle',0,17],
  ['fireplace',16,10],['coffeetable_glass',16,12],['sofa',16,14,2],['fishtank',19,10],['arcade',25,10],['surfboard',25,13],['dumbbells',22,16],['gymball',20,15]];
 let S;
-function newState(){return{v:9,day:1,min:7*60,gold:600,area:'town',px:4.5*16,py:7.5*16,fx:0,fy:1,
+function newState(){return{v:9,day:1,min:7*60,gold:600,area:'room:office',px:10.5*16,py:12.5*16,fx:0,fy:1,
  condo:{floors:1,building:0,ad:0,apps:null,tenants:[null]},offers:{},fr:{},
  rooms:{office:{lay:'ground',g2:1,furn:OFFICE_DEFAULT.map(f=>({...f}))},f1:{lay:'unit',furn:starterFurn()}},finv:{plant_monstera:1,rug_wood:1},
  opt:{dpad:0},hearts:0};}
@@ -617,7 +617,7 @@ function frame(now){ctx=mainCtx;const dt=Math.min(.05,(now-last)/1000);last=now;
  updateTop();updateButtons();requestAnimationFrame(frame);}
 syncTenants(true);
 goArea(S.area.startsWith('room:')&&!S.rooms[S.area.slice(5)]?'town':S.area,[S.px/16-.5,S.py/16-.5]);applyOpt();
-if(!loaded)setTimeout(()=>{toast(S.oldSave?'Fantasy Town v0.0.0.8 — a new small town! Old save reset (+£150)':'Welcome to Lumen Town, manager! Tap the CONDO to post an ad');toast(isTouch?'Tap to walk · tap a tenant to FOLLOW':'Click to walk · E use · M map · tap a tenant to FOLLOW');},400);
+if(!loaded)setTimeout(()=>{toast(S.oldSave?'Fantasy Town v0.0.0.8 — a new small town! Old save reset (+£150)':'Welcome to Lumen Residences! You are in the lobby.');toast(isTouch?'Tap to walk · tap a tenant to FOLLOW':'Click to walk · E use · M map · tap a tenant to FOLLOW');},400);
 requestAnimationFrame(frame);
 // ---------- test hooks ----------
 window.FT={get S(){return S},get TN(){return TN},CHARS,PLACES,act,goArea,enterRoom,walkTo,condoAct,startDialogue,talkTenant,hangOut:window.hangOut,syncTenants,schedule,happiness,rentOf,toggleFollow,frLv,
