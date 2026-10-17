@@ -1,26 +1,15 @@
-
 'use strict';
-// Lumen Town v0.0.2.4
-// Lobby start + instant teleport travel + developer tools.
-// Existing game systems and data structures are retained.
-
-const door = id => {
-  const b = BLDS.find(q => q.id == id);
-  return [b.door[0], b.door[1] + 1];
-};
+// Lumen Town v0.0.2.5
+// Condo lobby start + Condo/Gym travel + developer tools.
 
 const TRAVEL = [
-  ['condo', '🏢', 'Back to Condo', 'Lumen Residences lobby'],
-  ['gym', '🏋', 'Lumen Gym', "Ares' workplace"],
-  ['cafe', '☕', 'Cafe', 'Cocoa & treats'],
-  ['restaurant', '🍜', 'Restaurant', 'Noodles & dinner'],
-  ['park', '🌳', 'City Park', 'Fresh air'],
-  ['fshop', '🛋', 'Furniture Shop', 'Buy furniture'],
-  ['club', '🪩', 'Night Club', 'Open 9 PM – 3 AM'],
-  ['street', '🛣', 'Town Street', 'Walk around town']
+  ['condo', '🏢', 'Condo Lobby', 'Lumen Residences'],
+  ['gym', '🏋', 'Lumen Gym', "Ares' workplace"]
 ];
 
 function travelTo(id) {
+  if (id !== 'condo' && id !== 'gym') return;
+
   closeMenu();
   showMap = false;
   showCondo = false;
@@ -34,27 +23,17 @@ function travelTo(id) {
 
   if (id === 'condo') {
     enterRoom('office');
-  } else if (id === 'gym') {
-    enterGym();
-  } else if (id === 'park') {
-    goArea('town', [7, 17]);
-  } else if (id === 'street') {
-    goArea('town', [17, 16]);
   } else {
-    goArea('town', door(id));
+    enterGym();
   }
 
   save(1);
-
-  toast(
-    '✨ ' +
-    (TRAVEL.find(t => t[0] === id) || [,, id])[2]
-  );
+  toast('✨ ' + (TRAVEL.find(t => t[0] === id)[2]));
 }
 
 window.travelTo = travelTo;
 
-// Teleport menu: choose a destination instead of navigating the map.
+// Travel menu: Condo and Gym only.
 window.travelMenu = function () {
   const here = area.room === 'office'
     ? 'condo'
@@ -73,19 +52,14 @@ window.travelMenu = function () {
 
   openMenu(`
     <h3>🚪 WHERE TO?</h3>
-    <p>Choose a destination to teleport instantly.</p>
+    <p>Choose where you want to go.</p>
     <div class="tlist">${destinations}</div>
-    ${area.room === 'office'
-      ? `<button onclick="closeMenu();back()">
-          🚶 Walk out onto the street instead
-         </button>`
-      : ''}
   `);
 
   menuEl.scrollTop = 0;
 };
 
-// Floating TRAVEL button.
+// Floating travel button.
 const tvb = document.createElement('div');
 tvb.id = 'btravel';
 tvb.className = 'tb pill';
@@ -143,7 +117,11 @@ settings = function () {
   b.onclick = toggleDev;
 
   const closeButton = menuEl.querySelector('button.x');
-  menuEl.insertBefore(b, closeButton);
+  if (closeButton) {
+    menuEl.insertBefore(b, closeButton);
+  } else {
+    menuEl.appendChild(b);
+  }
 };
 
 window.devDo = (k, v) => {
@@ -214,7 +192,7 @@ window.devDo = (k, v) => {
 
     if (v === 'office' || (v[0] === 'f' && S.rooms[v])) {
       enterRoom(v);
-    } else {
+    } else if (v === 'condo' || v === 'gym') {
       travelTo(v);
     }
 
@@ -240,7 +218,7 @@ window.devPanel = function () {
       Day ${S.day} · ${money(S.gold)} ·
       Ares ${REL[frLv('Ares')]} (♥ ${fr('Ares').p})
     </p>
-    <b>Teleport</b>
+    <b>Travel</b>
     <div class="dgrid">
   `;
 
@@ -294,9 +272,14 @@ window.devPanel = function () {
   menuEl.scrollTop = 0;
 };
 
-// Start in the condo lobby instead of the outdoor town.
+// Start directly inside the condo lobby.
 function startInLobby() {
   try {
+    showMap = false;
+    showApps = false;
+    showCondo = false;
+    condoScroll = 0;
+
     if (typeof enterRoom === 'function') {
       enterRoom('office');
     }
